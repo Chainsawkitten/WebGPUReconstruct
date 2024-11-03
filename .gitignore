@@ -1,3 +1,4 @@
 build
 .vs
 __pycache__
+!.github/actions/build

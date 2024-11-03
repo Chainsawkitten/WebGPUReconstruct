@@ -1,0 +1,25 @@
+name: Build WebGPUReconstruct
+on:
+  workflow_call:
+  push:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - platform: windows
+            backend: wgpu
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 0
+
+      - name: WebGPUReconstruct Release Build
+        uses: ./.github/actions/build
+        with:
+          backend: ${{ matrix.backend }}

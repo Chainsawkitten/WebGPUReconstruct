@@ -1,0 +1,35 @@
+name: WebGPUReconstuct Build
+description: Build WebGPUReconstuct
+
+inputs:
+  backend:
+    required: true
+    description: Which backend to use (wgpu or Dawn)
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout glfw
+      shell: bash
+      run: |
+        git submodule update --init --recursive replay/glfw
+
+# TODO Checkout Dawn
+
+    - name: Checkout wgpu-native
+      if: ${{ inputs.backend == 'wgpu' }}
+      shell: bash
+      run: |
+        git submodule update --init --recursive replay/wgpu-native
+
+# TODO Setup Dawn dependencies
+
+    - name: Configure build
+      shell: bash
+      run: |
+        python ./configure.py --${{ inputs.backend }} --target release
+
+    - name: Build
+      shell: bash
+      run: |
+        python ./build.py
