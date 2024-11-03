@@ -9,6 +9,10 @@ jobs:
       matrix:
         include:
           - platform: windows
+            backend: dawn
+            os: windows-latest
+
+          - platform: windows
             backend: wgpu
             os: windows-latest
     runs-on: ${{ matrix.os }}

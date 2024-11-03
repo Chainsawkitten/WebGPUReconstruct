@@ -14,7 +14,12 @@ runs:
       run: |
         git submodule update --init --recursive replay/glfw
 
-# TODO Checkout Dawn
+# Checkout only the necessary WebGPU implementation.
+    - name: Checkout Dawn
+      if: ${{ inputs.backend == 'dawn' }}
+      shell: bash
+      run: |
+        git -c submodule."third_party/angle".update=none -c submodule."third_party/swiftshader".update=none submodule update --init --recursive replay/dawn
 
     - name: Checkout wgpu-native
       if: ${{ inputs.backend == 'wgpu' }}
@@ -22,8 +27,10 @@ runs:
       run: |
         git submodule update --init --recursive replay/wgpu-native
 
-# TODO Setup Dawn dependencies
+# Setup Dawn dependencies
+# TODO
 
+# Configure and build
     - name: Configure build
       shell: bash
       run: |
