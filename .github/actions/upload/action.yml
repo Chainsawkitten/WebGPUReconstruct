@@ -17,13 +17,43 @@ runs:
       uses: actions/upload-artifact@v4
       if: ${{ inputs.platform == 'windows' && inputs.backend == 'wgpu' }}
       with:
-        name: WebGPUReconstruct-capture
+        name: capture
         path: |
           ${{ github.workspace }}/build/capture
 
     - name: Upload replayer
+      if: ${{ inputs.platform != 'android' }}
       uses: actions/upload-artifact@v4
       with:
-        name: WebGPUReconstruct-${{ inputs.platform }}-${{ inputs.backend }}
+        name: replay-${{ inputs.platform }}-${{ inputs.backend }}
         path: |
           ${{ github.workspace }}/build/replay/Release
+
+# Rename apk to avoid name conflict
+    - name: Rename APK (Dawn)
+      if: ${{ inputs.platform == 'android' && inputs.backend == 'dawn' }}
+      shell: bash
+      run: |
+        mv ${{ github.workspace }}/build/replay/AndroidDawn/app/build/outputs/apk/release/app-release.apk ${{ github.workspace }}/build/replay/AndroidDawn/app/build/outputs/apk/release/WebGPUNativeReplayDawn.apk
+
+    - name: Rename APK (wgpu)
+      if: ${{ inputs.platform == 'android' && inputs.backend == 'wgpu' }}
+      shell: bash
+      run: |
+        mv $GITHUB_WORKSPACE/build/replay/AndroidWgpu/app/build/outputs/apk/release/app-release.apk $GITHUB_WORKSPACE/build/replay/AndroidWgpu/app/build/outputs/apk/release/WebGPUNativeReplayWgpu.apk
+
+    - name: Upload replayer (Android - Dawn)
+      if: ${{ inputs.platform == 'android' && inputs.backend == 'dawn' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: replay-${{ inputs.platform }}-${{ inputs.backend }}
+        path: |
+          ${{ github.workspace }}/build/replay/AndroidDawn/app/build/outputs/apk/release
+
+    - name: Upload replayer (Android - wgpu)
+      if: ${{ inputs.platform == 'android' && inputs.backend == 'wgpu' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: replay-${{ inputs.platform }}-${{ inputs.backend }}
+        path: |
+          ${{ github.workspace }}/build/replay/AndroidWgpu/app/build/outputs/apk/release

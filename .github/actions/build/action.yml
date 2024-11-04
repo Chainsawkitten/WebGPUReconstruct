@@ -2,6 +2,9 @@ name: WebGPUReconstuct Build
 description: Build WebGPUReconstuct
 
 inputs:
+  platform:
+    required: true
+    description: The target platform
   backend:
     required: true
     description: Which backend to use (wgpu or Dawn)
@@ -27,11 +30,26 @@ runs:
       run: |
         git submodule update --init --recursive replay/wgpu-native
 
+# Setup correct Java version
+    - name: Setup Java
+      if: ${{ inputs.platform == 'android' }}
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
 # Configure and build
     - name: Configure build
+      if: ${{ inputs.platform != 'android' }}
       shell: bash
       run: |
         python ./configure.py --${{ inputs.backend }} --target release
+
+    - name: Configure build (Android)
+      if: ${{ inputs.platform == 'android' }}
+      shell: bash
+      run: |
+        python ./configure.py --${{ inputs.backend }} --target release --no-host --android --ndk $ANDROID_NDK
 
     - name: Build
       shell: bash

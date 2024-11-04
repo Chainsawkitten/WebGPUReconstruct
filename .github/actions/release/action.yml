@@ -1,0 +1,43 @@
+name: Release
+description: Merge build artifacts and release
+
+inputs:
+  token:
+    required: true
+    description: The GitHub token
+
+runs:
+  using: composite
+  steps:
+    - name: Download capture artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: capture
+        merge-multiple: true
+        path: |
+          ${{ github.workspace }}/build/capture
+
+    - name: Download replay artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: replay*
+        merge-multiple: true
+        path: |
+          ${{ github.workspace }}/build/replay
+
+    - name: Archive Release
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: zip
+        directory: ${{ github.workspace }}/build
+        filename: WebGPUReconstruct.zip
+        path: .
+
+    - name: Release asset
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        artifacts: ${{ github.workspace }}/build/WebGPUReconstruct.zip
+        omitNameDuringUpdate: true
+        omitBodyDuringUpdate: true
+        token: ${{ inputs.token }}
