@@ -34,7 +34,7 @@ runs:
       if: ${{ inputs.platform == 'android' && inputs.backend == 'dawn' }}
       shell: bash
       run: |
-        mv ${{ github.workspace }}/build/replay/AndroidDawn/app/build/outputs/apk/release/app-release.apk ${{ github.workspace }}/build/replay/AndroidDawn/app/build/outputs/apk/release/WebGPUNativeReplayDawn.apk
+        mv $GITHUB_WORKSPACE/build/replay/AndroidDawn/app/build/outputs/apk/release/app-release.apk $GITHUB_WORKSPACE/build/replay/AndroidDawn/app/build/outputs/apk/release/WebGPUNativeReplayDawn.apk
 
     - name: Rename APK (wgpu)
       if: ${{ inputs.platform == 'android' && inputs.backend == 'wgpu' }}
@@ -48,7 +48,7 @@ runs:
       with:
         name: replay-${{ inputs.platform }}-${{ inputs.backend }}
         path: |
-          ${{ github.workspace }}/build/replay/AndroidDawn/app/build/outputs/apk/release
+          ${{ github.workspace }}/build/replay/AndroidDawn/app/build/outputs/apk/release/*.apk
 
     - name: Upload replayer (Android - wgpu)
       if: ${{ inputs.platform == 'android' && inputs.backend == 'wgpu' }}
@@ -56,4 +56,4 @@ runs:
       with:
         name: replay-${{ inputs.platform }}-${{ inputs.backend }}
         path: |
-          ${{ github.workspace }}/build/replay/AndroidWgpu/app/build/outputs/apk/release
+          ${{ github.workspace }}/build/replay/AndroidWgpu/app/build/outputs/apk/release/*.apk
