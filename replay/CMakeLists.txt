@@ -58,11 +58,13 @@ if (WEBGPU_NATIVE_REPLAY_WGPU_BACKEND)
     # Find library
     if (ANDROID)
         set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
-        find_library(WGPU_LIBRARY libwgpu_native.a wgpu_native
+        find_library(WGPU_LIBRARY
+            NAMES libwgpu_native.a wgpu_native
             HINTS "${CMAKE_CURRENT_SOURCE_DIR}/wgpu-native/target/aarch64-linux-android/release"
         )
     else()
-        find_library(WGPU_LIBRARY wgpu_native
+        find_library(WGPU_LIBRARY
+            NAMES wgpu_native.lib wgpu_native
             HINTS "${CMAKE_CURRENT_SOURCE_DIR}/wgpu-native/target/release"
         )
     endif()

@@ -27,9 +27,6 @@ runs:
       run: |
         git submodule update --init --recursive replay/wgpu-native
 
-# Setup Dawn dependencies
-# TODO
-
 # Configure and build
     - name: Configure build
       shell: bash

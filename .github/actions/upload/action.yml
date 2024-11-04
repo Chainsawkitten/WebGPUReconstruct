@@ -1,0 +1,29 @@
+name: Upload artifact
+description: Upload build artifacts
+
+inputs:
+  platform:
+    required: true
+    description: The target platform
+  backend:
+    required: true
+    description: Which backend to use (wgpu or Dawn)
+
+runs:
+  using: composite
+  steps:
+# All platforms build the browser extension, but we only need to upload it once.
+    - name: Upload browser extension
+      uses: actions/upload-artifact@v4
+      if: ${{ inputs.platform == 'windows' && inputs.backend == 'wgpu' }}
+      with:
+        name: WebGPUReconstruct-capture
+        path: |
+          ${{ github.workspace }}/build/capture
+
+    - name: Upload replayer
+      uses: actions/upload-artifact@v4
+      with:
+        name: WebGPUReconstruct-${{ inputs.platform }}-${{ inputs.backend }}
+        path: |
+          ${{ github.workspace }}/build/replay/Release
