@@ -351,6 +351,7 @@ __WebGPUReconstruct_file.writeUint64(bufferOffset);
 if (dataOffset == undefined) {
     dataOffset = 0;
 }
+let dataUint8;
 if (ArrayBuffer.isView(data)) {
     dataOffset *= data.BYTES_PER_ELEMENT;
     if (size == undefined) {
@@ -358,12 +359,12 @@ if (ArrayBuffer.isView(data)) {
     } else {
         size *= data.BYTES_PER_ELEMENT;
     }
-    data = data.buffer;
+    dataUint8 = (new Uint8Array(data.buffer)).subarray(data.byteOffset, data.byteOffset + data.byteLength);
 } else if (size == undefined) {
     size = data.byteLength - dataOffset;
+    dataUint8 = new Uint8Array(data);
 }
 __WebGPUReconstruct_file.writeUint64(size);
-let dataUint8 = new Uint8Array(data);
 __WebGPUReconstruct_file.writeBuffer(dataUint8, dataOffset, size);
 """, """
 DebugOutput("writeBuffer\\n");
@@ -424,7 +425,7 @@ __WebGPUReconstruct_file.writeUint32($COMMAND_ID);
 """ + GPUImageCopyTexture.save("destination") + GPUExtent3D.save("size") + """
 let dataUint8;
 if (ArrayBuffer.isView(data)) {
-    dataUint8 = new Uint8Array(data.buffer);
+    dataUint8 = (new Uint8Array(data.buffer)).subarray(data.byteOffset, data.byteOffset + data.byteLength);
 } else {
     dataUint8 = new Uint8Array(data);
 }
