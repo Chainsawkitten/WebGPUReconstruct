@@ -2,6 +2,7 @@
 WebGPUReconstruct provides a browser extension that can capture the WebGPU commands being issued by a web page. The commands will be stored in a `.wgpur` capture file which can later be [replayed using the native replayers](REPLAYING.md).
 
 ## Installing the browser extension
+Note that all paths refer to the [release builds](https://github.com/Chainsawkitten/WebGPUReconstruct/releases). If building WebGPUReconstruct yourself, `capture` refers to `build/capture`.
 
 ### Desktop
 WebGPUReconstruct has been tested in [Chrome](https://www.google.com/chrome/), [Edge](https://www.microsoft.com/en-us/edge) and Firefox [Nightly](https://www.mozilla.org/en-US/firefox/channel/desktop/#nightly)/[Developer Edition](https://www.mozilla.org/en-US/firefox/developer/). Other Chromium-based browsers should also work in theory.
@@ -12,7 +13,7 @@ WebGPUReconstruct has been tested in [Chrome](https://www.google.com/chrome/), [
 
   ![Developer mode](images/developer_mode.png)
 - Click on `Load unpacked`.
-- Select the `build/capture/chromium` folder.
+- Select the `capture/chromium` folder.
 
 #### Firefox Nightly/Developer Edition
 - Go to `about:config`.
@@ -21,20 +22,20 @@ WebGPUReconstruct has been tested in [Chrome](https://www.google.com/chrome/), [
 - Click on the cog wheel and select `Install Add-on From File...`
 
   ![Install extension from file](images/install_extension_from_file.png)
-- Select the `build/capture/firefox.zip` file.
+- Select the `capture/firefox.zip` file.
 
 ##### Alternative: Temporary add-on
 If you don't want to enable installing extensions that haven't been signed by Mozilla, you can install the capture extension as a temporary debug add-on. Temporary add-ons are removed when quitting the browser, so you'll have to reinstall it whenever you want to use it.
 - Go to `about:debugging`.
 - Go to the `This Nightly`/`This Firefox` tab.
 - Click on `Load Temporary Add-on...`
-- Select the `build/capture/firefox/manifest.json` file.
+- Select the `capture/firefox/manifest.json` file.
 
 ### Android
 Most Android browsers don't support extensions. However, WebGPUReconstruct has been tested to work with [Lemur](https://play.google.com/store/apps/details?id=com.lemurbrowser.exts) and [Firefox Nightly for Developers](https://play.google.com/store/apps/details?id=org.mozilla.fenix).
 
 #### Lemur
-- Transfer `build/capture/chromium.zip` to the Android device (eg. using `adb push`).
+- Transfer `capture/chromium.zip` to the Android device (eg. using `adb push`).
 - Open Lemur and go to the extension settings.
 - Press `Load *.zip/*.crx/*.user.js file.`.
 - Locate the zip file and select it.
@@ -42,7 +43,7 @@ Most Android browsers don't support extensions. However, WebGPUReconstruct has b
 When capturing content, Lemur tends to add `.txt` to the capture file. Just rename the files to `.wgpur` and they will work.
 
 #### Firefox Nightly for Developers
-- Transfer `build/capture/firefox.zip` to the Android device (eg. using `adb push`).
+- Transfer `capture/firefox.zip` to the Android device (eg. using `adb push`).
 - Go to Settings->About Firefox Nightly.
 - Press the Firefox logo 5 times to enable the debug menu.
 - Go to `about:config`.

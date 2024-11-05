@@ -23,7 +23,7 @@ It would be nice if the size of the window could automatically match that of the
 You can use `--vulkan`, `--d3d11`, `--d3d12` or `--metal` to request a specific backend (will only work if your device supports that backend). If no backend is specified, WebGPUReconstruct will choose whatever is the default backend on your device.
 
 ## Android
-WebGPUReconstruct provides two native replayer apks, one for each backend. They are located in: `build/replay/AndroidDawn/app/build/outputs/apk` and `build/replay/AndroidWgpu/app/build/outputs/apk`. Install your preferred backend using `adb install apk_name.apk`. Since both apks use the same application ID, you can't have both backends installed at the same time.
+WebGPUReconstruct provides two native replayer apks, one for each backend. Install your preferred backend using `adb install apk_name.apk`. Since both apks use the same application ID, you can't have both backends installed at the same time.
 
 The Android replayer is rather barebones and doesn't allow any configuration. It will always replay the capture file located in: `/sdcard/Android/data/net.chainsawkitten.webgpunativereplay/files/capture.wgpur`. So move your capture file to that location and rename it before starting the replayer. I would like to have something more user-friendly in the future.
 
