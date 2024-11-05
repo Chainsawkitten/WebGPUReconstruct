@@ -17,6 +17,13 @@ runs:
       run: |
         git submodule update --init --recursive replay/glfw
 
+    - name: Install glfw dependencies
+      if: ${{ inputs.platform == 'linux' }}
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install libwayland-dev libxkbcommon-dev xorg-dev
+
 # Checkout only the necessary WebGPU implementation.
     - name: Checkout Dawn
       if: ${{ inputs.backend == 'dawn' }}

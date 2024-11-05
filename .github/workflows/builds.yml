@@ -16,6 +16,10 @@ jobs:
             backend: wgpu
             os: windows-latest
 
+          - platform: linux
+            backend: wgpu
+            os: ubuntu-latest
+
           - platform: android
             backend: wgpu
             os: windows-latest

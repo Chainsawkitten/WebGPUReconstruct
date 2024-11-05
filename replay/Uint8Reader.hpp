@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <string_view>
+#include <cstdint>
 
 namespace WebGPUNativeReplay {
 

@@ -6,6 +6,7 @@ Install the following dependencies:
 - [Python](https://www.python.org/)
 - [CMake](https://cmake.org/)
 - A C++ compiler (eg. MSVC, gcc, clang)
+- If building on Linux, [GLFW dependencies](https://www.glfw.org/docs/latest/compile_guide.html#compile_deps)
 
 ## Setup
 Download the repository's submodules. Dawn has a lot of dependencies so this can take a while.

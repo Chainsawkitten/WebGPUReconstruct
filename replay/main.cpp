@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <cstring>
 #include <GLFW/glfw3.h>
 #include "Adapter.hpp"
 #include "Device.hpp"

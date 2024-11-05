@@ -64,7 +64,7 @@ if (WEBGPU_NATIVE_REPLAY_WGPU_BACKEND)
         )
     else()
         find_library(WGPU_LIBRARY
-            NAMES wgpu_native.lib wgpu_native
+            NAMES wgpu_native.lib libwgpu_native.a wgpu_native
             HINTS "${CMAKE_CURRENT_SOURCE_DIR}/wgpu-native/target/release"
         )
     endif()
