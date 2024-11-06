@@ -17,6 +17,10 @@ jobs:
             os: windows-latest
 
           - platform: linux
+            backend: dawn
+            os: ubuntu-latest
+
+          - platform: linux
             backend: wgpu
             os: ubuntu-latest
 

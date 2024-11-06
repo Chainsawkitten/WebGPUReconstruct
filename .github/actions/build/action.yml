@@ -45,6 +45,25 @@ runs:
         distribution: 'temurin'
         java-version: '17'
 
+# Dawn dependencies
+    - name: Install Depot Tools
+      if: ${{ inputs.platform == 'linux' && inputs.backend == 'dawn'}}
+      uses: newkdev/setup-depot-tools@v1.0.1
+
+    - name: Gclient sync
+      if: ${{ inputs.platform == 'linux' && inputs.backend == 'dawn'}}
+      shell: bash
+      working-directory: ${{ github.workspace }}/replay/dawn
+      run: |
+        cp scripts/standalone.gclient .gclient
+        gclient sync
+
+    - name: Install Dawn dependencies
+      if: ${{ inputs.platform == 'linux' && inputs.backend == 'dawn'}}
+      shell: bash
+      run: |
+        sudo apt-get install libxrandr-dev libxinerama-dev libxcursor-dev mesa-common-dev libx11-xcb-dev pkg-config nodejs npm
+
 # Configure and build
     - name: Configure build
       if: ${{ inputs.platform != 'android' }}

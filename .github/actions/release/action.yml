@@ -17,13 +17,29 @@ runs:
         path: |
           ${{ github.workspace }}/build/capture
 
-    - name: Download replay artifact
+    - name: Download replay artifacts (Windows)
       uses: actions/download-artifact@v4
       with:
-        pattern: replay*
+        pattern: replay-windows*
         merge-multiple: true
         path: |
-          ${{ github.workspace }}/build/replay
+          ${{ github.workspace }}/build/replay/windows
+
+    - name: Download replay artifacts (Linux)
+      uses: actions/download-artifact@v4
+      with:
+        pattern: replay-linux*
+        merge-multiple: true
+        path: |
+          ${{ github.workspace }}/build/replay/linux
+
+    - name: Download replay artifacts (Android)
+      uses: actions/download-artifact@v4
+      with:
+        pattern: replay-android*
+        merge-multiple: true
+        path: |
+          ${{ github.workspace }}/build/replay/android
 
     - name: Archive Release
       uses: thedoctor0/zip-release@0.7.1
