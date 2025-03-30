@@ -146,14 +146,15 @@ class ArrayType:
         plural = self.get_plural_name(name)
         
         capture = 'if (' + plural + ' == undefined) {\n'
-        capture += plural + ' = [];\n'
-        capture += '}\n'
+        capture += '__WebGPUReconstruct_file.writeUint64(0);\n'
+        capture += '} else {\n'
         capture += '__WebGPUReconstruct_file.writeUint64(' + plural + '.length);\n'
         capture += 'for (let i' + str(arrayDepth) + ' = 0; i' + str(arrayDepth) + ' < ' + plural + '.length; i' + str(arrayDepth) + ' += 1) {\n'
         if isinstance(self.type, StructType):
             capture += self.type.save(plural + '[i' + str(arrayDepth) + ']', True)
         else:
             capture += self.type.save(plural + '[i' + str(arrayDepth) + ']')
+        capture += '}\n'
         capture += '}\n'
         
         arrayDepth -= 1
@@ -357,7 +358,7 @@ GPUTextureDescriptor = StructType("GPUTextureDescriptor", [
     [GPUTextureDimension, "dimension", '"2d"'],
     [GPUTextureFormat, "format"],
     [Uint32, "usage"],
-    [ArrayType(GPUTextureFormat), "viewFormat", '[]']
+    [ArrayType(GPUTextureFormat), "viewFormat"]
 ])
 
 GPUBindGroupDescriptor = StructType("GPUBindGroupDescriptor", [
