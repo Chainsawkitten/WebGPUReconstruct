@@ -4,7 +4,7 @@ import subprocess
 
 version = (0, 3)
 # Increment the file version whenever a change is introduced.
-fileVersion = 5
+fileVersion = 6
 
 versionString = str(version[0]) + "." + str(version[1])
 versionInt = version[0] * 10000 + version[1]
@@ -65,6 +65,7 @@ def write_capture_files(configuration, browser):
     replace_string_in_file(contentPath, "$VERSION_MINOR", str(version[1]))
     replace_string_in_file(contentPath, "$CAPTURE_COMMANDS", captureCommandsString)
     replace_string_in_file(contentPath, "$WRAP_COMMANDS", wrapCommandsString)
+    replace_string_in_file(contentPath, "$STRUCT_SAVE_FUNCTIONS", structSaveFunctionsString)
     
     shutil.make_archive("build/capture/" + browser, 'zip', "build/capture/" + browser)
 
@@ -86,6 +87,8 @@ def write_replay_files(rootDir, configuration):
     
     replace_string_in_file("build/replay/Capture.cpp", "$RUN_COMMANDS", runCommandsString)
     replace_string_in_file("build/replay/Capture.cpp", "$ENUM_CONVERSIONS", enumConversionsString)
+    replace_string_in_file("build/replay/Capture.cpp", "$STRUCT_LOAD_FUNCTIONS", structLoadFunctionsString)
+    replace_string_in_file("build/replay/Capture.cpp", "$STRUCT_CLEAN_FUNCTIONS", structCleanFunctionsString)
     replace_string_in_file("build/replay/Capture.hpp", "$MAPS", mapString)
     replace_string_in_file("build/replay/Constants.hpp", "$VERSION_MAJOR", str(version[0]))
     replace_string_in_file("build/replay/Constants.hpp", "$VERSION_MINOR", str(version[1]))

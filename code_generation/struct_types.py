@@ -3,36 +3,43 @@ from code_generation.enum_types import *
 from code_generation.custom_types import *
 from code_generation.unsupported_type import *
 
+structSaveFunctionsString = ""
+structLoadFunctionsString = ""
+structCleanFunctionsString = ""
+
 # Composite type.
 class StructType:
     def __init__(self, webName, members):
+        global structSaveFunctionsString
+        global structLoadFunctionsString
+        global structCleanFunctionsString
+        
         self.webName = webName
         self.nativeName = "W" + webName
         self.members = members
+        
+        capture = 'function __WebGPUReconstruct_' + webName + '_Save(value) {\n'
+        for member in self.members:
+            if len(member) >= 3:
+                capture += 'if (value.' + member[1] + ' == undefined) {\n'
+                capture += 'value.' + member[1] + ' = ' + member[2] + ';\n'
+                capture += '}\n'
+            
+            capture += member[0].save('value.' + member[1])
+        capture += '}\n'
+        
+        structSaveFunctionsString += capture
     
     def save(self, name, isInArray = False):
         capture = ''
         if isInArray:
-            for member in self.members:
-                if len(member) >= 3:
-                    capture += 'if (' + name + '.' + member[1] + ' == undefined) {\n'
-                    capture += name + '.' + member[1] + ' = ' + member[2] + '\n'
-                    capture += '}\n'
-                
-                capture += member[0].save(name + '.' + member[1])
+            capture += '__WebGPUReconstruct_' + self.webName + '_Save(' + name + ');\n'
         else:
             capture += 'if (' + name  + ' == undefined) {\n'
             capture += '__WebGPUReconstruct_file.writeUint8(0);\n'
             capture += '} else {\n'
             capture += '__WebGPUReconstruct_file.writeUint8(1);\n'
-            for member in self.members:
-                # Set default value (if one was specified).
-                if len(member) >= 3:
-                    capture += 'if (' + name + '.' + member[1] + ' == undefined) {\n'
-                    capture += name + '.' + member[1] + ' = ' + member[2] + '\n'
-                    capture += '}\n'
-                
-                capture += member[0].save(name + '.' + member[1])
+            capture += '__WebGPUReconstruct_' + self.webName + '_Save(' + name + ');\n'
             capture += '}\n'
         return capture
     
@@ -85,7 +92,7 @@ class SubStructType:
             # Set default value (if one was specified).
             if len(member) >= 3:
                 capture += 'if (' + name + '.' + member[1] + ' == undefined) {\n'
-                capture += name + '.' + member[1] + ' = ' + member[2] + '\n'
+                capture += name + '.' + member[1] + ' = ' + member[2] + ';\n'
                 capture += '}\n'
             
             capture += member[0].save(name + '.' + member[1])

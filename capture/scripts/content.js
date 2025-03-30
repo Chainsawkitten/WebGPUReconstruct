@@ -435,6 +435,10 @@ var __WebGPUReconstruct_GPUBuffer_mapAsync_original = GPUBuffer.prototype.mapAsy
 var __WebGPUReconstruct_GPUBuffer_getMappedRange_original = GPUBuffer.prototype.getMappedRange;
 var __WebGPUReconstruct_GPUBuffer_unmap_original = GPUBuffer.prototype.unmap;
 
+// Functions used to store information about WebGPU structs.
+// Generated code will be inserted here.
+$STRUCT_SAVE_FUNCTIONS
+
 // Functions used to store information about WebGPU function calls.
 // Generated code will be inserted here.
 $CAPTURE_COMMANDS
