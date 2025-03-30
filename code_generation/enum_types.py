@@ -1,13 +1,26 @@
+enumSaveFunctionsString = ""
 enumConversionsString = ""
 
 # Enums (strings in JavaScript...)
 class EnumType:
     def __init__(self, webName, members):
+        global enumSaveFunctionsString
         global enumConversionsString
         
         self.webName = webName
         self.nativeName = "W" + webName
         self.members = members
+        
+        enumSaveFunctionsString += 'function __WebGPUReconstruct_' + self.webName + '_Save(value) {\n'
+        enumSaveFunctionsString += 'switch (String(value)) {\n'
+        for i in range(len(self.members)):
+            enumSaveFunctionsString += 'case "' + self.members[i][0] + '":\n'
+            enumSaveFunctionsString += '__WebGPUReconstruct_file.writeUint32(' + str(i) + ');\n'
+            enumSaveFunctionsString += 'break;\n'
+        enumSaveFunctionsString += 'default:\n'
+        enumSaveFunctionsString += '__WebGPUReconstruct_file.writeUint32(' + str(len(self.members)) + ');\n'
+        enumSaveFunctionsString += '}\n'
+        enumSaveFunctionsString += '}\n'
         
         enumConversionsString += 'static ' + self.nativeName + ' Convert' + self.webName + '(uint32_t value) {\n'
         enumConversionsString += 'switch (value) {\n'
@@ -20,14 +33,7 @@ class EnumType:
         enumConversionsString += '}\n'
     
     def save(self, name):
-        capture = 'switch (String(' + name + ')) {\n'
-        for i in range(len(self.members)):
-            capture += 'case "' + self.members[i][0] + '":\n'
-            capture += '__WebGPUReconstruct_file.writeUint32(' + str(i) + ');\n'
-            capture += 'break;\n'
-        capture += 'default:\n'
-        capture += '__WebGPUReconstruct_file.writeUint32(' + str(len(self.members)) + ');\n'
-        capture += '}\n'
+        capture = '__WebGPUReconstruct_' + self.webName + '_Save(' + name + ');\n'
         return capture
     
     def load(self, name):

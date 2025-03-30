@@ -65,6 +65,7 @@ def write_capture_files(configuration, browser):
     replace_string_in_file(contentPath, "$VERSION_MINOR", str(version[1]))
     replace_string_in_file(contentPath, "$CAPTURE_COMMANDS", captureCommandsString)
     replace_string_in_file(contentPath, "$WRAP_COMMANDS", wrapCommandsString)
+    replace_string_in_file(contentPath, "$ENUM_SAVE_FUNCTIONS", enumSaveFunctionsString)
     replace_string_in_file(contentPath, "$STRUCT_SAVE_FUNCTIONS", structSaveFunctionsString)
     
     shutil.make_archive("build/capture/" + browser, 'zip', "build/capture/" + browser)

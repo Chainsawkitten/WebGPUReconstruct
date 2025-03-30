@@ -627,6 +627,7 @@ def format(code, baseIndentation = 0):
 captureCommandsString = format(captureCommandsString)
 runCommandsString = format(runCommandsString, 1)
 mapString = format(mapString, 1)
+enumSaveFunctionsString = format(enumSaveFunctionsString)
 enumConversionsString = format(enumConversionsString)
 structSaveFunctionsString = format(structSaveFunctionsString)
 structLoadFunctionsString = format(structLoadFunctionsString)
