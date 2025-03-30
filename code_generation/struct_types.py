@@ -404,7 +404,7 @@ GPUTextureBindingLayout = SubStructType("GPUTextureBindingLayout", [
     [Bool, "multisampled"]
 ])
 
-GPUStorageTextureBindingLayout = SubStructType(", GPUStorageTextureBindingLayout", [
+GPUStorageTextureBindingLayout = SubStructType("GPUStorageTextureBindingLayout", [
     [GPUStorageTextureAccess, "access", '"write-only"'],
     [GPUTextureFormat, "format"],
     [GPUTextureViewDimension, "viewDimension", '"2d"']
