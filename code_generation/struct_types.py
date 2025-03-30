@@ -83,19 +83,28 @@ class StructType:
 
 # Struct that's included directly inside another struct (as opposed to a pointer to a struct).
 class SubStructType:
-    def __init__(self, members):
+    def __init__(self, webName, members):
+        global structSaveFunctionsString
+        global structLoadFunctionsString
+        global structCleanFunctionsString
+        
+        self.webName = webName
         self.members = members
-    
-    def save(self, name):
-        capture = ''
+        
+        capture = 'function __WebGPUReconstruct_' + webName + '_Save(value) {\n'
         for member in self.members:
-            # Set default value (if one was specified).
             if len(member) >= 3:
-                capture += 'if (' + name + '.' + member[1] + ' == undefined) {\n'
-                capture += name + '.' + member[1] + ' = ' + member[2] + ';\n'
+                capture += 'if (value.' + member[1] + ' == undefined) {\n'
+                capture += 'value.' + member[1] + ' = ' + member[2] + ';\n'
                 capture += '}\n'
             
-            capture += member[0].save(name + '.' + member[1])
+            capture += member[0].save('value.' + member[1])
+        capture += '}\n'
+        
+        structSaveFunctionsString += capture
+    
+    def save(self, name):
+        capture = '__WebGPUReconstruct_' + self.webName + '_Save(' + name + ');\n'
         return capture
     
     def load(self, name):
@@ -246,7 +255,7 @@ GPURenderPassDescriptor = StructType("GPURenderPassDescriptor", [
     [Unsupported, "maxDrawCount"] # <- TODO In native spec, this is a chained struct.
 ])
 
-GPUBlendComponent = SubStructType([
+GPUBlendComponent = SubStructType("GPUBlendComponent", [
     [GPUBlendOperation, "operation"],
     [GPUBlendFactor, "srcFactor", '"one"'],
     [GPUBlendFactor, "dstFactor"]
@@ -269,14 +278,14 @@ GPUVertexBufferLayout = StructType("GPUVertexBufferLayout", [
     [ArrayType(GPUVertexAttribute), "attribute"]
 ])
 
-GPUVertexState = SubStructType([
+GPUVertexState = SubStructType("GPUVertexState", [
     [GPUShaderModule, "module"],
     [String, "entryPoint"],
     [GPUConstants, "constant"],
     [ArrayType(GPUVertexBufferLayout), "buffer"],
 ])
 
-GPUPrimitiveState = SubStructType([
+GPUPrimitiveState = SubStructType("GPUPrimitiveState", [
     [GPUPrimitiveTopology, "topology", '"triangle-list"'],
     [GPUIndexFormat, "stripIndexFormat"],
     [GPUFrontFace, "frontFace", '"ccw"'],
@@ -284,7 +293,7 @@ GPUPrimitiveState = SubStructType([
     #[Unsupported, "unclippedDepth"] # <- TODO depth-clip-control
 ])
 
-GPUStencilFaceState = SubStructType([
+GPUStencilFaceState = SubStructType("GPUStencilFaceState", [
     [GPUCompareFunction, "compare", '"always"'],
     [GPUStencilOperation, "failOp", '"keep"'],
     [GPUStencilOperation, "depthFailOp", '"keep"'],
@@ -317,7 +326,7 @@ GPUFragmentState = StructType("GPUFragmentState", [
     [ArrayType(GPUColorTargetState), "target"],
 ])
 
-GPUMultisampleState = SubStructType([
+GPUMultisampleState = SubStructType("GPUMultisampleState", [
     [Uint32, "count", '1'],
     [Uint32, "mask", '0xFFFFFFFF'],
     [Bool, "alphaToCoverageEnabled"],
@@ -378,23 +387,23 @@ GPUImageCopyTexture = StructType("GPUImageCopyTexture", [
     [GPUTextureAspect, "aspect", '"all"']
 ])
 
-GPUBufferBindingLayout = SubStructType([
+GPUBufferBindingLayout = SubStructType("GPUBufferBindingLayout", [
     [GPUBufferBindingType, "type", '"uniform"'],
     [Bool, "hasDynamicOffset"],
     [Uint64, "minBindingSize"]
 ])
 
-GPUSamplerBindingLayout = SubStructType([
+GPUSamplerBindingLayout = SubStructType("GPUSamplerBindingLayout", [
     [GPUSamplerBindingType, "type", '"filtering"']
 ])
 
-GPUTextureBindingLayout = SubStructType([
+GPUTextureBindingLayout = SubStructType("GPUTextureBindingLayout", [
     [GPUTextureSampleType, "sampleType", '"float"'],
     [GPUTextureViewDimension, "viewDimension", '"2d"'],
     [Bool, "multisampled"]
 ])
 
-GPUStorageTextureBindingLayout = SubStructType([
+GPUStorageTextureBindingLayout = SubStructType(", GPUStorageTextureBindingLayout", [
     [GPUStorageTextureAccess, "access", '"write-only"'],
     [GPUTextureFormat, "format"],
     [GPUTextureViewDimension, "viewDimension", '"2d"']
@@ -420,7 +429,7 @@ GPUPipelineLayoutDescriptor = StructType("GPUPipelineLayoutDescriptor", [
     [ArrayType(GPUBindGroupLayout), "bindGroupLayout"]
 ])
 
-GPUProgrammableStageDescriptor = SubStructType([
+GPUProgrammableStageDescriptor = SubStructType("GPUProgrammableStageDescriptor", [
     [GPUShaderModule, "module"],
     [String, "entryPoint"],
     [GPUConstants, "constant"]
