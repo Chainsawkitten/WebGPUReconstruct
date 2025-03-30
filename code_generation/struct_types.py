@@ -22,10 +22,12 @@ class StructType:
         for member in self.members:
             if len(member) >= 3:
                 capture += 'if (value.' + member[1] + ' == undefined) {\n'
-                capture += 'value.' + member[1] + ' = ' + member[2] + ';\n'
+                capture += member[0].save(member[2])
+                capture += '} else {\n'
+                capture += member[0].save('value.' + member[1])
                 capture += '}\n'
-            
-            capture += member[0].save('value.' + member[1])
+            else:
+                capture += member[0].save('value.' + member[1])
         capture += '}\n'
         
         structSaveFunctionsString += capture
@@ -95,10 +97,12 @@ class SubStructType:
         for member in self.members:
             if len(member) >= 3:
                 capture += 'if (value.' + member[1] + ' == undefined) {\n'
-                capture += 'value.' + member[1] + ' = ' + member[2] + ';\n'
+                capture += member[0].save(member[2])
+                capture += '} else {\n'
+                capture += member[0].save('value.' + member[1])
                 capture += '}\n'
-            
-            capture += member[0].save('value.' + member[1])
+            else:
+                capture += member[0].save('value.' + member[1])
         capture += '}\n'
         
         structSaveFunctionsString += capture

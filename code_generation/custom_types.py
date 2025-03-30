@@ -46,7 +46,8 @@ if ($name.a != undefined) {
 __WebGPUReconstruct_file.writeFloat64($name.a);
 } else {
 __WebGPUReconstruct_file.writeFloat64($name[3]);
-}""", """
+}
+""", """
 $name.r = reader.ReadFloat64();
 $name.g = reader.ReadFloat64();
 $name.b = reader.ReadFloat64();
