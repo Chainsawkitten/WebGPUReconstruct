@@ -91,6 +91,17 @@ $STRUCT_FUNCTION_DECLARATIONS
         }
         return m[id];
     }
+    
+    template <class T>
+    T* LoadStructPointer(void (Capture::*loadMethod)(T*)) {
+        if (reader.ReadUint8()) {
+            T* value = new T;
+            (this->*loadMethod)(value);
+            return value;
+        }
+        
+        return nullptr;
+    }
 
     Capture() = delete;
     Capture(const Capture&) = delete;

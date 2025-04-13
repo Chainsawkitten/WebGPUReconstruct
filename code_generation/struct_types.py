@@ -64,12 +64,7 @@ class StructType:
         if isInArray:
             replay += 'Load' + self.webName + '(&' + name + ');\n'
         else:
-            replay += 'if (reader.ReadUint8()) {\n'
-            replay += name + ' = new ' + self.nativeName + ';\n'
-            replay += 'Load' + self.webName + '(const_cast<' + self.nativeName + '*>(' + name + '));\n'
-            replay += '} else {\n'
-            replay += name + ' = nullptr;\n'
-            replay += '}\n'
+            replay += name + ' = LoadStructPointer(&Capture::Load' + self.webName + ');\n'
         return replay
     
     def declare_argument(self, name):
