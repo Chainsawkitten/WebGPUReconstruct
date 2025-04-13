@@ -159,7 +159,6 @@ void Capture::ErrorOutput(string text) {
 
 Capture::Status Capture::RunNextCommand() {
     const uint32_t commandCode = reader.ReadUint32();
-    size_t stringLength;
 
     switch (commandCode) {
     case 0:

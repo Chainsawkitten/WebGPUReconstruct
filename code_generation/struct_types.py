@@ -6,6 +6,7 @@ from code_generation.unsupported_type import *
 structSaveFunctionsString = ""
 structLoadFunctionsString = ""
 structCleanFunctionsString = ""
+structFunctionDeclarationsString = ""
 
 # Composite type.
 class StructType:
@@ -13,6 +14,7 @@ class StructType:
         global structSaveFunctionsString
         global structLoadFunctionsString
         global structCleanFunctionsString
+        global structFunctionDeclarationsString
         
         self.webName = webName
         self.nativeName = "W" + webName
@@ -31,6 +33,18 @@ class StructType:
         capture += '}\n'
         
         structSaveFunctionsString += capture
+        
+        load = 'void Capture::Load' + self.webName + '(' + self.nativeName + '* value) {\n'
+        load += '*value = {};\n'
+        for member in self.members:
+            load += member[0].load('value->' + member[1])
+        load += '}\n'
+        
+        structLoadFunctionsString += load
+        
+        functionDeclarations = 'void Load' + self.webName + '(' + self.nativeName + '* value);\n'
+        
+        structFunctionDeclarationsString += functionDeclarations
     
     def save(self, name, isInArray = False):
         capture = ''
@@ -48,17 +62,11 @@ class StructType:
     def load(self, name, isInArray = False):
         replay = ''
         if isInArray:
-            replay += name + ' = {};\n'
-            for member in self.members:
-                replay += member[0].load(name + '.' + member[1])
+            replay += 'Load' + self.webName + '(&' + name + ');\n'
         else:
             replay += 'if (reader.ReadUint8()) {\n'
             replay += name + ' = new ' + self.nativeName + ';\n'
-            replay += '*const_cast<' + self.nativeName + '*>(' + name + ') = {};\n'
-            
-            for member in self.members:
-                replay += member[0].load('const_cast<' + self.nativeName + '*>(' + name + ')->' + member[1])
-            
+            replay += 'Load' + self.webName + '(const_cast<' + self.nativeName + '*>(' + name + '));\n'
             replay += '} else {\n'
             replay += name + ' = nullptr;\n'
             replay += '}\n'

@@ -72,4 +72,15 @@ void Uint8Reader::ReadBuffer(uint8_t* buffer, uint64_t size) {
     file.read(reinterpret_cast<char*>(buffer), size);
 }
 
+WGPUStringView Uint8Reader::ReadString() {
+    WGPUStringView value = { nullptr, WGPU_STRLEN };
+    uint64_t stringLength = ReadUint64();
+    if (stringLength > 0) {
+        value.data = new char[stringLength];
+        ReadBuffer(reinterpret_cast<uint8_t*>(const_cast<char*>(value.data)), stringLength);
+        value.length = stringLength;
+    }
+    return value;
+}
+
 }

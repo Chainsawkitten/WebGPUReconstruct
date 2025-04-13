@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string_view>
 #include <cstdint>
+#include "WebGPU.hpp"
 
 namespace WebGPUNativeReplay {
 
@@ -19,6 +20,7 @@ class Uint8Reader {
     float ReadFloat32();
     double ReadFloat64();
     void ReadBuffer(uint8_t* buffer, uint64_t size);
+    WGPUStringView ReadString();
 
   private:
     std::ifstream file;

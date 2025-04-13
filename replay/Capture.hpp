@@ -52,8 +52,11 @@ class Capture {
 
     Uint8Reader reader;
     
-// Generated maps that map ID -> WebGPU object will be inserted here.
+    // Generated maps that map ID -> WebGPU object will be inserted here.
 $MAPS
+
+    // Generated functions for loading and clearing structs will be inserted here.
+$STRUCT_FUNCTION_DECLARATIONS
 
     struct CanvasTexture {
         WGPUTexture texture = nullptr;

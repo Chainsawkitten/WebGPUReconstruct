@@ -9,15 +9,7 @@ class StringType:
         return capture
     
     def load(self, name):
-        replay = 'stringLength = reader.ReadUint64();\n'
-        replay += 'if (stringLength > 0) {\n'
-        replay += name + '.data = new char[stringLength];\n'
-        replay += 'reader.ReadBuffer(reinterpret_cast<uint8_t*>(const_cast<char*>(' + name + '.data)), stringLength);\n'
-        replay += name + '.length = stringLength;\n'
-        replay += '} else {\n'
-        replay += name + '.data = nullptr;\n';
-        replay += name + '.length = WGPU_STRLEN;\n'
-        replay += '}\n'
+        replay = name + ' = reader.ReadString();\n'
         return replay
     
     def declare_argument(self, name):
