@@ -5,7 +5,6 @@ from code_generation.unsupported_type import *
 
 structSaveFunctionsString = ""
 structLoadFunctionsString = ""
-structCleanFunctionsString = ""
 structFunctionDeclarationsString = ""
 
 # Composite type.
@@ -13,7 +12,6 @@ class StructType:
     def __init__(self, webName, members):
         global structSaveFunctionsString
         global structLoadFunctionsString
-        global structCleanFunctionsString
         global structFunctionDeclarationsString
         
         self.webName = webName

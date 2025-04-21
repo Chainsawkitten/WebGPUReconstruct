@@ -89,7 +89,6 @@ def write_replay_files(rootDir, configuration):
     replace_string_in_file("build/replay/Capture.cpp", "$RUN_COMMANDS", runCommandsString)
     replace_string_in_file("build/replay/Capture.cpp", "$ENUM_CONVERSIONS", enumConversionsString)
     replace_string_in_file("build/replay/Capture.cpp", "$STRUCT_LOAD_FUNCTIONS", structLoadFunctionsString)
-    replace_string_in_file("build/replay/Capture.cpp", "$STRUCT_CLEAN_FUNCTIONS", structCleanFunctionsString)
     replace_string_in_file("build/replay/Capture.hpp", "$MAPS", mapString)
     replace_string_in_file("build/replay/Capture.hpp", "$STRUCT_FUNCTION_DECLARATIONS", structFunctionDeclarationsString)
     replace_string_in_file("build/replay/Constants.hpp", "$VERSION_MAJOR", str(version[0]))

@@ -29,9 +29,6 @@ $ENUM_CONVERSIONS
 // Generated functions to load WebGPU structs will be inserted here.
 $STRUCT_LOAD_FUNCTIONS
 
-// Generated functions to clean WebGPU structs will be inserted here.
-$STRUCT_CLEAN_FUNCTIONS
-
 Capture::Capture(string_view filename, Adapter& adapter, Device& device, SwapChain& swapChain, bool offscreen) : reader(filename), adapter(adapter), device(device), swapChain(swapChain) {
     this->offscreen = offscreen;
 
