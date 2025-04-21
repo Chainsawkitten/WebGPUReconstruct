@@ -173,16 +173,20 @@ class ArrayType:
         plural = self.get_plural_name(name)
         
         replay = name + 'Count = reader.ReadUint64();\n'
+        replay += '{\n'
+        replay += self.type.nativeName + '* a' + str(arrayDepth) + ';\n'
         replay += 'if (' + name + 'Count > 0) {\n'
-        replay += plural + ' = new ' + self.type.nativeName + '[' + name + 'Count];\n'
+        replay += 'a' + str(arrayDepth) + ' = new ' + self.type.nativeName + '[' + name + 'Count];\n'
         replay += '} else {\n'
-        replay += plural + ' = nullptr;\n';
+        replay += 'a' + str(arrayDepth) + ' = nullptr;\n';
         replay += '}\n'
         replay += 'for (uint64_t i' + str(arrayDepth) + ' = 0; i' + str(arrayDepth) + ' < ' + name + 'Count; ++i' + str(arrayDepth) + ') {\n'
         if isinstance(self.type, StructType):
-            replay += self.type.load('const_cast<' + self.type.nativeName + '*>(' + plural + ')[i' + str(arrayDepth) + ']', True)
+            replay += self.type.load('a' + str(arrayDepth) + '[i' + str(arrayDepth) + ']', True)
         else:
-            replay += self.type.load('const_cast<' + self.type.nativeName + '*>(' + plural + ')[i' + str(arrayDepth) + ']')
+            replay += self.type.load('a' + str(arrayDepth) + '[i' + str(arrayDepth) + ']')
+        replay += '}\n'
+        replay += plural + ' = a' + str(arrayDepth) + ';\n'
         replay += '}\n'
         arrayDepth -= 1
         return replay

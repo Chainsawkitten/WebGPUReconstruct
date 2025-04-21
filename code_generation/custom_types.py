@@ -178,11 +178,12 @@ __WebGPUReconstruct_file.writeFloat64($names[keys[i]]);
 }
 """, """
 $nameCount = reader.ReadUint64();
-$names = new WGPUConstantEntry[$nameCount];
+WGPUConstantEntry* constants = new WGPUConstantEntry[$nameCount];
 for (uint64_t keyI = 0; keyI < $nameCount; ++keyI) {
-""" + String.load("const_cast<WGPUConstantEntry*>(&$names[keyI])->key") + """
-const_cast<WGPUConstantEntry*>(&$names[keyI])->value = reader.ReadFloat64();
+""" + String.load("constants[keyI].key") + """
+constants[keyI].value = reader.ReadFloat64();
 }
+$names = constants;
 """, 'assert(false);\n', '$name', """
 for (uint64_t keyI = 0; keyI < $nameCount; ++keyI) {
 if ($names[keyI].key.length > 0) {
