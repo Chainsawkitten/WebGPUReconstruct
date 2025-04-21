@@ -271,15 +271,19 @@ Capture::Status Capture::RunNextCommand() {
     case 3:
     {
         DebugOutput("unmap\n");
-        
-        WGPUBuffer buffer = GetIdType(mapGPUBuffer, reader.ReadUint32());
-        
+
+        uint32_t bufferID = reader.ReadUint32();
+        WGPUBuffer buffer = GetIdType(mapGPUBuffer, bufferID);
+
         // Make sure the buffer has actually been mapped.
-        while (wgpuBufferGetMapState(buffer) != WGPUBufferMapState_Mapped) {
-            wgpuDeviceTick(device.GetDevice());
+        WGPUFutureWaitInfo waitInfo = {};
+        waitInfo.future = bufferMapFutures[bufferID];
+
+        while (!waitInfo.completed) {
+            wgpuInstanceWaitAny(adapter.GetInstance(), 1, &waitInfo, 0);
             this_thread::yield();
         }
-        
+
         const uint64_t ranges = reader.ReadUint64();
         for (uint64_t range = 0; range < ranges; ++range) {
             const uint64_t offset = reader.ReadUint64();
@@ -296,15 +300,19 @@ Capture::Status Capture::RunNextCommand() {
     case 4:
     {
         DebugOutput("unmap (read)\n");
-        
-        WGPUBuffer buffer = GetIdType(mapGPUBuffer, reader.ReadUint32());
-        
+
+        uint32_t bufferID = reader.ReadUint32();
+        WGPUBuffer buffer = GetIdType(mapGPUBuffer, bufferID);
+
         // Make sure the buffer has actually been mapped.
-        while (wgpuBufferGetMapState(buffer) != WGPUBufferMapState_Mapped) {
-            wgpuDeviceTick(device.GetDevice());
+        WGPUFutureWaitInfo waitInfo = {};
+        waitInfo.future = bufferMapFutures[bufferID];
+
+        while (!waitInfo.completed) {
+            wgpuInstanceWaitAny(adapter.GetInstance(), 1, &waitInfo, 0);
             this_thread::yield();
         }
-        
+
         wgpuBufferUnmap(buffer);
         break;
     }

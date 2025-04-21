@@ -70,6 +70,8 @@ $STRUCT_FUNCTION_DECLARATIONS
     std::map<uint32_t, CanvasTexture> canvasTextures;
     CanvasSize canvasSize;
 
+    std::unordered_map<uint32_t, WGPUFuture> bufferMapFutures;
+
     bool valid = true;
     uint32_t versionMajor = 0;
     uint32_t versionMinor = 0;

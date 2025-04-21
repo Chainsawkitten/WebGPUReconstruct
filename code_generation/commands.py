@@ -399,18 +399,16 @@ if ((mode & GPUMapMode.WRITE) == 0) {
 }
 """, """
 DebugOutput("mapAsync\\n");
-WGPUBuffer buffer = GetIdType(mapGPUBuffer, reader.ReadUint32());
+uint32_t bufferID = reader.ReadUint32();
+WGPUBuffer buffer = GetIdType(mapGPUBuffer, bufferID);
 const uint32_t mode = reader.ReadUint32();
 const uint64_t offset = reader.ReadUint64();
 const uint64_t size = reader.ReadUint64();
-#if WEBGPU_BACKEND_DAWN
-wgpuBufferMapAsync(buffer, mode, offset, size, [](WGPUBufferMapAsyncStatus, void*){}, nullptr);
-#else
+
 WGPUBufferMapCallbackInfo2 callbackInfo = {};
-callbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
+callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
 callbackInfo.callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void* userdata1, void* userdata2){};
-wgpuBufferMapAsync2(buffer, mode, offset, size, callbackInfo);
-#endif
+bufferMapFutures[bufferID] = wgpuBufferMapAsync2(buffer, mode, offset, size, callbackInfo);
 """)
 
 add_custom_command(GPUBuffer, "getMappedRange", ["offset", "size"], """
