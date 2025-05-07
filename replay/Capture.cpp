@@ -275,14 +275,7 @@ Capture::Status Capture::RunNextCommand() {
         uint32_t bufferID = reader.ReadUint32();
         WGPUBuffer buffer = GetIdType(mapGPUBuffer, bufferID);
 
-        // Make sure the buffer has actually been mapped.
-        WGPUFutureWaitInfo waitInfo = {};
-        waitInfo.future = bufferMapFutures[bufferID];
-
-        while (!waitInfo.completed) {
-            wgpuInstanceWaitAny(adapter.GetInstance(), 1, &waitInfo, 0);
-            this_thread::yield();
-        }
+        WaitForBufferMapping(bufferID);
 
         const uint64_t ranges = reader.ReadUint64();
         for (uint64_t range = 0; range < ranges; ++range) {
@@ -304,14 +297,7 @@ Capture::Status Capture::RunNextCommand() {
         uint32_t bufferID = reader.ReadUint32();
         WGPUBuffer buffer = GetIdType(mapGPUBuffer, bufferID);
 
-        // Make sure the buffer has actually been mapped.
-        WGPUFutureWaitInfo waitInfo = {};
-        waitInfo.future = bufferMapFutures[bufferID];
-
-        while (!waitInfo.completed) {
-            wgpuInstanceWaitAny(adapter.GetInstance(), 1, &waitInfo, 0);
-            this_thread::yield();
-        }
+        WaitForBufferMapping(bufferID);
 
         wgpuBufferUnmap(buffer);
         break;
@@ -352,6 +338,25 @@ void Capture::AddCanvasSize(uint32_t width, uint32_t height) {
         break;
     case CanvasSize::State::MULTIPLE:
         break;
+    }
+}
+
+void Capture::WaitForBufferMapping(uint32_t bufferID) {
+    // Make sure the buffer has actually been mapped.
+    bool mapped = false;
+    while (!mapped) {
+        wgpuInstanceProcessEvents(adapter.GetInstance());
+        this_thread::yield();
+
+        bufferMapStateLock.lock();
+        auto state = bufferMapState.find(bufferID);
+        if (state == bufferMapState.end()) {
+            // If mapAsync has not been called, we assume the buffer was mapped at creation.
+            mapped = true;
+        } else {
+            mapped = state->second;
+        }
+        bufferMapStateLock.unlock();
     }
 }
 

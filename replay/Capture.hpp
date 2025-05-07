@@ -6,6 +6,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <map>
+#include <mutex>
 
 namespace WebGPUNativeReplay {
 
@@ -70,7 +71,8 @@ $STRUCT_FUNCTION_DECLARATIONS
     std::map<uint32_t, CanvasTexture> canvasTextures;
     CanvasSize canvasSize;
 
-    std::unordered_map<uint32_t, WGPUFuture> bufferMapFutures;
+    std::unordered_map<uint32_t, bool> bufferMapState;
+    std::mutex bufferMapStateLock;
 
     bool valid = true;
     uint32_t versionMajor = 0;
@@ -85,6 +87,7 @@ $STRUCT_FUNCTION_DECLARATIONS
     void ErrorOutput(std::string text);
     
     void AddCanvasSize(uint32_t width, uint32_t height);
+    void WaitForBufferMapping(uint32_t bufferID);
     
     template <class T>
     T GetIdType(std::unordered_map<uint32_t, T>& m, uint32_t id) {
