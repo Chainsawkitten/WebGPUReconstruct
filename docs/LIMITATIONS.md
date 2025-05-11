@@ -33,9 +33,6 @@ Do *not* use WebGPUReconstruct to profile memory usage as it will not be represe
 ## Labels
 WebGPUReconstruct records the `label` supplied with the `GPUObjectDescriptorBase` when creating an object. However, it will ignore any changes to a `GPUObject`'s `label` after creation.
 
-## wgpu
-Mapping buffers (whether via `mapAsync` or `mappedAtCreation`) is not supported in the wgpu backend due to `wgpuBufferGetMapState` being [unimplemented in wgpu-native](https://github.com/gfx-rs/wgpu-native/issues/400). Replaying captures which map buffers will lead to failure. Try using the Dawn backend instead.
-
 ## Performance
 The goal is for WebGPUReconstruct to have representative performance when replaying a capture (making profiling of captures useful). However, it is *not* representative for profiling memory usage.
 

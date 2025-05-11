@@ -271,15 +271,12 @@ Capture::Status Capture::RunNextCommand() {
     case 3:
     {
         DebugOutput("unmap\n");
-        
-        WGPUBuffer buffer = GetIdType(mapGPUBuffer, reader.ReadUint32());
-        
-        // Make sure the buffer has actually been mapped.
-        while (wgpuBufferGetMapState(buffer) != WGPUBufferMapState_Mapped) {
-            wgpuDeviceTick(device.GetDevice());
-            this_thread::yield();
-        }
-        
+
+        uint32_t bufferID = reader.ReadUint32();
+        WGPUBuffer buffer = GetIdType(mapGPUBuffer, bufferID);
+
+        WaitForBufferMapping(bufferID);
+
         const uint64_t ranges = reader.ReadUint64();
         for (uint64_t range = 0; range < ranges; ++range) {
             const uint64_t offset = reader.ReadUint64();
@@ -296,15 +293,12 @@ Capture::Status Capture::RunNextCommand() {
     case 4:
     {
         DebugOutput("unmap (read)\n");
-        
-        WGPUBuffer buffer = GetIdType(mapGPUBuffer, reader.ReadUint32());
-        
-        // Make sure the buffer has actually been mapped.
-        while (wgpuBufferGetMapState(buffer) != WGPUBufferMapState_Mapped) {
-            wgpuDeviceTick(device.GetDevice());
-            this_thread::yield();
-        }
-        
+
+        uint32_t bufferID = reader.ReadUint32();
+        WGPUBuffer buffer = GetIdType(mapGPUBuffer, bufferID);
+
+        WaitForBufferMapping(bufferID);
+
         wgpuBufferUnmap(buffer);
         break;
     }
@@ -344,6 +338,25 @@ void Capture::AddCanvasSize(uint32_t width, uint32_t height) {
         break;
     case CanvasSize::State::MULTIPLE:
         break;
+    }
+}
+
+void Capture::WaitForBufferMapping(uint32_t bufferID) {
+    // Make sure the buffer has actually been mapped.
+    bool mapped = false;
+    while (!mapped) {
+        wgpuInstanceProcessEvents(adapter.GetInstance());
+        this_thread::yield();
+
+        bufferMapStateLock.lock();
+        auto state = bufferMapState.find(bufferID);
+        if (state == bufferMapState.end()) {
+            // If mapAsync has not been called, we assume the buffer was mapped at creation.
+            mapped = true;
+        } else {
+            mapped = state->second;
+        }
+        bufferMapStateLock.unlock();
     }
 }
 

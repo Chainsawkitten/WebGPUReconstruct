@@ -399,18 +399,39 @@ if ((mode & GPUMapMode.WRITE) == 0) {
 }
 """, """
 DebugOutput("mapAsync\\n");
-WGPUBuffer buffer = GetIdType(mapGPUBuffer, reader.ReadUint32());
+uint32_t bufferID = reader.ReadUint32();
+WGPUBuffer buffer = GetIdType(mapGPUBuffer, bufferID);
 const uint32_t mode = reader.ReadUint32();
 const uint64_t offset = reader.ReadUint64();
 const uint64_t size = reader.ReadUint64();
-#if WEBGPU_BACKEND_DAWN
-wgpuBufferMapAsync(buffer, mode, offset, size, [](WGPUBufferMapAsyncStatus, void*){}, nullptr);
-#else
+
+bufferMapStateLock.lock();
+bufferMapState[bufferID] = false;
+bufferMapStateLock.unlock();
+
+struct UserData {
+    uint32_t bufferID;
+    std::unordered_map<uint32_t, bool>* mapState;
+    std::mutex* lock;
+};
+
+UserData* userdata = new UserData;
+userdata->bufferID = bufferID;
+userdata->mapState = &bufferMapState;
+userdata->lock = &bufferMapStateLock;
+
 WGPUBufferMapCallbackInfo2 callbackInfo = {};
-callbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
-callbackInfo.callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void* userdata1, void* userdata2){};
+callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
+callbackInfo.callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void* userdata1, void* userdata2){
+    UserData* userdata = static_cast<UserData*>(userdata1);
+    userdata->lock->lock();
+    (*userdata->mapState)[userdata->bufferID] = true;
+    userdata->lock->unlock();
+    
+    delete userdata;
+};
+callbackInfo.userdata1 = &userdata;
 wgpuBufferMapAsync2(buffer, mode, offset, size, callbackInfo);
-#endif
 """)
 
 add_custom_command(GPUBuffer, "getMappedRange", ["offset", "size"], """
