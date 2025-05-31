@@ -300,7 +300,7 @@ GPUPrimitiveState = SubStructType("GPUPrimitiveState", [
     [GPUIndexFormat, "stripIndexFormat"],
     [GPUFrontFace, "frontFace", '"ccw"'],
     [GPUCullMode, "cullMode", '"none"'],
-    #[Unsupported, "unclippedDepth"] # <- TODO depth-clip-control
+    [Bool, "unclippedDepth"],
 ])
 
 GPUStencilFaceState = SubStructType("GPUStencilFaceState", [
