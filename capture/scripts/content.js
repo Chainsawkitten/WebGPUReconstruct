@@ -1,14 +1,10 @@
 const __WebGPUReconstruct_blockSize = 1024 * 1024;
 
 class __WebGPUReconstruct_Uint8Writer {
-    grow() {
-        this.currentSize = 0;
-        this.arrays.push(new Uint8Array(__WebGPUReconstruct_blockSize));
-    }
-    
     constructor() {
         this.arrays = [];
         this.currentSize = 0;
+        this.filename = "__WebGPUReconstruct_capture.wgpur";
         this.grow();
         
         // Create conversion buffers once and reuse them.
@@ -23,6 +19,11 @@ class __WebGPUReconstruct_Uint8Writer {
         
         this.convertFloat64Array = new Float64Array(1);
         this.convertFloat64ArrayUint8 = new Uint8Array(this.convertFloat64Array.buffer);
+    }
+
+    grow() {
+        this.currentSize = 0;
+        this.arrays.push(new Uint8Array(__WebGPUReconstruct_blockSize));
     }
     
     writeUint8(value) {
@@ -140,6 +141,39 @@ class __WebGPUReconstruct_Uint8Writer {
     writeBuffer(uint8Array, offset, size) {
         let reservedPosition = this.reserve(size);
         this.writeReserved(reservedPosition, uint8Array.subarray(offset, offset + size));
+    }
+
+    async writeToOPFS() {
+        const root = await navigator.storage.getDirectory();
+
+        // Delete previous capture if one exists.
+        await root.removeEntry(this.filename).catch(err => {});
+
+        // Create capture file and save contents.
+        const fileHandle = await root.getFileHandle(this.filename, { create: true });
+        const fileStream = await fileHandle.createWritable();
+
+        for (let i = 0; i < this.arrays.length; i += 1) {
+            await fileStream.write({
+                type: "write",
+                data: this.arrays[i],
+                position: i * __WebGPUReconstruct_blockSize
+            });
+        }
+
+        await fileStream.close();
+    }
+
+    async readFromOPFS() {
+        const root = await navigator.storage.getDirectory();
+        const fileHandle = await root.getFileHandle(this.filename);
+        const file = await fileHandle.getFile();
+        return file;
+    }
+
+    async cleanOPFS() {
+        const root = await navigator.storage.getDirectory();
+        await root.removeEntry(this.filename).catch(err => {});
     }
 }
 
@@ -671,12 +705,21 @@ document.addEventListener('__WebGPUReconstruct_saveCapture', function() {
     }
     __WebGPUReconstruct_firstCapture = false;
     __webGPUReconstruct.finishCapture();
-    
-    const blob = new Blob(__WebGPUReconstruct_file.arrays);
-    
-    // Create and click on a download link to save capture.
-    let a = document.createElement('a');
-    a.download = "capture.wgpur"
-    a.href = URL.createObjectURL(blob);
-    a.click();
+
+    navigator.storage.estimate().then((estimate) => {
+        console.log("Quota: " + String(estimate.quota / 1024 / 1024) + " MiB");
+        console.log("Usage: " + String(estimate.usage / 1024 / 1024) + " MiB");
+    });
+
+    __WebGPUReconstruct_file.writeToOPFS().then(() => {
+        __WebGPUReconstruct_file.readFromOPFS().then((file) => {
+            // Create and click on a download link to save capture.
+            let a = document.createElement('a');
+            a.download = "capture.wgpur"
+            a.href = URL.createObjectURL(file);
+            a.click();
+        }).then(() => {
+            //__WebGPUReconstruct_file.cleanOPFS();
+        });
+    });
 });
