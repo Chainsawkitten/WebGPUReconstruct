@@ -104,7 +104,7 @@ class __WebGPUReconstruct_Uint8Writer {
     
     reserve(size) {
         let reservedPosition = { array: this.arrays.length - 1, size: this.currentSize };
-        
+
         this.currentSize += size;
         while (this.currentSize >= __WebGPUReconstruct_blockSize) {
             this.arrays.push(new Uint8Array(__WebGPUReconstruct_blockSize));
@@ -636,6 +636,11 @@ function __WebGPUReconstruct_GPUDevice_createComputePipelineAsync(originalMethod
 class __WebGPUReconstruct {
     constructor() {
         __WebGPUReconstruct_DebugOutput("Starting WebGPU Reconstruct");
+
+        navigator.storage.estimate().then((estimate) => {
+            console.log("Quota: " + String(estimate.quota / 1024 / 1024) + " MiB");
+            console.log("Usage: " + String(estimate.usage / 1024 / 1024) + " MiB");
+        });
         
         __WebGPUReconstruct_file.writeUint32($FILE_VERSION);
         __WebGPUReconstruct_file.writeUint32($VERSION_MAJOR);
@@ -706,20 +711,21 @@ document.addEventListener('__WebGPUReconstruct_saveCapture', function() {
     __WebGPUReconstruct_firstCapture = false;
     __webGPUReconstruct.finishCapture();
 
-    navigator.storage.estimate().then((estimate) => {
-        console.log("Quota: " + String(estimate.quota / 1024 / 1024) + " MiB");
-        console.log("Usage: " + String(estimate.usage / 1024 / 1024) + " MiB");
-    });
-
+    console.log("Writing to OPFS...");
     __WebGPUReconstruct_file.writeToOPFS().then(() => {
+        console.log("Reading from OPFS...");
         __WebGPUReconstruct_file.readFromOPFS().then((file) => {
+            console.log("Creating download link...");
+
             // Create and click on a download link to save capture.
             let a = document.createElement('a');
             a.download = "capture.wgpur"
             a.href = URL.createObjectURL(file);
             a.click();
-        }).then(() => {
-            //__WebGPUReconstruct_file.cleanOPFS();
         });
     });
+});
+
+window.addEventListener('beforeunload', (event) => {
+    __WebGPUReconstruct_file.cleanOPFS();
 });
