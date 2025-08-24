@@ -2,10 +2,13 @@ const __WebGPUReconstruct_blockSize = 1024 * 1024;
 
 class __WebGPUReconstruct_Uint8Writer {
     constructor() {
-        this.arrays = [];
+        this.buffer = new Uint8Array(__WebGPUReconstruct_blockSize);
         this.currentSize = 0;
         this.filename = "__WebGPUReconstruct_capture.wgpur";
-        this.grow();
+        this.captureFile = undefined;
+        this.filePosition = 0;
+        this.currentPromise = this.openCaptureFile();
+        this.lastNotice = 0;
         
         // Create conversion buffers once and reuse them.
         this.convertUint64Array = new BigUint64Array(1);
@@ -21,17 +24,51 @@ class __WebGPUReconstruct_Uint8Writer {
         this.convertFloat64ArrayUint8 = new Uint8Array(this.convertFloat64Array.buffer);
     }
 
-    grow() {
+    writeToOPFS(buffer, size, position) {
+        if (size == 0) {
+            return;
+        }
+
+        if (position > this.lastNotice + 1024 * 1024 * 100) {
+            this.lastNotice = position;
+            console.log(String(position / 1024 / 1024) + " MiB");
+        }
+
+        const promise = this.currentPromise;
+        const write = async () => {
+            await promise;
+            if (this.captureFile == undefined) {
+                return;
+            }
+            await this.captureFile.write({
+                type: "write",
+                data: buffer,
+                position: position,
+                size: size
+            });
+        };
+
+        this.currentPromise = write();
+    }
+
+    flush() {
+        if (this.currentSize == 0) {
+            return;
+        }
+
+        this.writeToOPFS(this.buffer, this.currentSize, this.filePosition);
+        this.filePosition += this.currentSize;
+        
         this.currentSize = 0;
-        this.arrays.push(new Uint8Array(__WebGPUReconstruct_blockSize));
+        this.buffer = new Uint8Array(__WebGPUReconstruct_blockSize);
     }
     
     writeUint8(value) {
         if (this.currentSize >= __WebGPUReconstruct_blockSize) {
-            this.grow();
+            this.flush();
         }
         
-        this.arrays[this.arrays.length - 1][this.currentSize] = value;
+        this.buffer[this.currentSize] = value;
         this.currentSize += 1;
     }
     
@@ -103,39 +140,18 @@ class __WebGPUReconstruct_Uint8Writer {
     }
     
     reserve(size) {
-        let reservedPosition = { array: this.arrays.length - 1, size: this.currentSize };
+        this.flush();
 
-        this.currentSize += size;
-        while (this.currentSize >= __WebGPUReconstruct_blockSize) {
-            this.arrays.push(new Uint8Array(__WebGPUReconstruct_blockSize));
-            this.currentSize -= __WebGPUReconstruct_blockSize;
-        }
-        
+        let reservedPosition = this.filePosition;
+        this.writeToOPFS(new Uint8Array(size), size, reservedPosition);
+        this.filePosition += size;
         return reservedPosition;
     }
     
     writeReserved(reservedPosition, uint8Array) {
-        let currentArray = reservedPosition.array;
-        let currentSize = reservedPosition.size;
-        
-        let offset = 0;
-        let bytesToWrite = uint8Array.length;
-        
-        while (bytesToWrite > 0) {
-            if (currentSize + bytesToWrite < __WebGPUReconstruct_blockSize) {
-                // Write all the remaining bytes.
-                this.arrays[currentArray].set(uint8Array.subarray(offset, offset + bytesToWrite), currentSize);
-                bytesToWrite = 0;
-            } else {
-                // Write as many bytes as we can fit.
-                let bytesThatFit = __WebGPUReconstruct_blockSize - currentSize;
-                this.arrays[currentArray].set(uint8Array.subarray(offset, offset + bytesThatFit), currentSize);
-                currentArray++;
-                currentSize = 0;
-                bytesToWrite -= bytesThatFit;
-                offset += bytesThatFit;
-            }
-        }
+        let copy = new Uint8Array(uint8Array.length);
+        copy.set(uint8Array);
+        this.writeToOPFS(copy, copy.length, reservedPosition);
     }
     
     writeBuffer(uint8Array, offset, size) {
@@ -143,7 +159,7 @@ class __WebGPUReconstruct_Uint8Writer {
         this.writeReserved(reservedPosition, uint8Array.subarray(offset, offset + size));
     }
 
-    async writeToOPFS() {
+    async openCaptureFile() {
         const root = await navigator.storage.getDirectory();
 
         // Delete previous capture if one exists.
@@ -151,23 +167,29 @@ class __WebGPUReconstruct_Uint8Writer {
 
         // Create capture file and save contents.
         const fileHandle = await root.getFileHandle(this.filename, { create: true });
-        const fileStream = await fileHandle.createWritable();
+        this.captureFile = await fileHandle.createWritable();
+    }
 
-        for (let i = 0; i < this.arrays.length; i += 1) {
-            await fileStream.write({
-                type: "write",
-                data: this.arrays[i],
-                position: i * __WebGPUReconstruct_blockSize
-            });
+    async finishCapture() {
+        console.log("Finishing writing to OPFS...");
+
+        this.flush();
+
+        let captureFile = this.captureFile;
+        this.captureFile = undefined;
+
+        if (this.currentPromise != undefined) {
+            await this.currentPromise;
         }
 
-        await fileStream.close();
+        await captureFile.close();
     }
 
     async readFromOPFS() {
         const root = await navigator.storage.getDirectory();
         const fileHandle = await root.getFileHandle(this.filename);
         const file = await fileHandle.getFile();
+        console.log("Final capture file size: " + String(file.size / 1024 / 1024) + " MiB");
         return file;
     }
 
@@ -686,6 +708,8 @@ $WRAP_COMMANDS
         // End of capture.
         __WebGPUReconstruct_file.writeUint32(0);
 
+        let promise = __WebGPUReconstruct_file.finishCapture();
+
         // Reset wrapped functions.
         GPUAdapter.prototype.requestDevice = this.GPUAdapter_requestDevice_original;
         GPU.prototype.requestAdapter = this.GPU_requestAdapter_original;
@@ -695,6 +719,8 @@ $WRAP_COMMANDS
         GPUDevice.prototype.createComputePipelineAsync = this.GPUDevice_createComputePipelineAsync_original;
 
 $RESET_COMMANDS
+
+        return promise;
     }
 }
 
@@ -709,10 +735,8 @@ document.addEventListener('__WebGPUReconstruct_saveCapture', function() {
         return;
     }
     __WebGPUReconstruct_firstCapture = false;
-    __webGPUReconstruct.finishCapture();
 
-    console.log("Writing to OPFS...");
-    __WebGPUReconstruct_file.writeToOPFS().then(() => {
+    __webGPUReconstruct.finishCapture().then(() => {
         console.log("Reading from OPFS...");
         __WebGPUReconstruct_file.readFromOPFS().then((file) => {
             console.log("Creating download link...");
