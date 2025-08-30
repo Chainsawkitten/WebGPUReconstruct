@@ -153,7 +153,6 @@ class __WebGPUReconstruct_Uint8Writer {
         this.flush();
 
         let reservedPosition = this.filePosition;
-        this.writeToOPFS(new Uint8Array(size), size, reservedPosition);
         this.filePosition += size;
         return reservedPosition;
     }
