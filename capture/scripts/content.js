@@ -9,6 +9,8 @@ class __WebGPUReconstruct_Uint8Writer {
         this.filePosition = 0;
         this.currentPromise = this.openCaptureFile();
         this.lastNotice = 0;
+        this.requestedBytes = 0;
+        this.finishedBytes = 0;
         
         // Create conversion buffers once and reuse them.
         this.convertUint64Array = new BigUint64Array(1);
@@ -46,8 +48,11 @@ class __WebGPUReconstruct_Uint8Writer {
                 position: position,
                 size: size
             });
+            this.finishedBytes += size;
+            console.log(String((this.requestedBytes - this.finishedBytes) / 1024 / 1024) + " MiB unfinished writes");
         };
 
+        this.requestedBytes += size;
         this.currentPromise = write();
     }
 
@@ -190,6 +195,7 @@ class __WebGPUReconstruct_Uint8Writer {
         const fileHandle = await root.getFileHandle(this.filename);
         const file = await fileHandle.getFile();
         console.log("Final capture file size: " + String(file.size / 1024 / 1024) + " MiB");
+
         return file;
     }
 
