@@ -175,12 +175,12 @@ class __WebGPUReconstruct_Uint8Writer {
 
         this.flush();
 
-        let captureFile = this.captureFile;
-        this.captureFile = undefined;
-
         if (this.currentPromise != undefined) {
             await this.currentPromise;
         }
+
+        let captureFile = this.captureFile;
+        this.captureFile = undefined;
 
         await captureFile.close();
     }
