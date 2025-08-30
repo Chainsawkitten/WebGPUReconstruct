@@ -11,6 +11,7 @@ class __WebGPUReconstruct_Uint8Writer {
         this.lastNotice = 0;
         this.requestedBytes = 0;
         this.finishedBytes = 0;
+        this.maxUnfinished = 0;
         
         // Create conversion buffers once and reuse them.
         this.convertUint64Array = new BigUint64Array(1);
@@ -49,7 +50,11 @@ class __WebGPUReconstruct_Uint8Writer {
                 size: size
             });
             this.finishedBytes += size;
-            console.log(String((this.requestedBytes - this.finishedBytes) / 1024 / 1024) + " MiB unfinished writes");
+            const difference = this.requestedBytes - this.finishedBytes;
+            if (difference > this.maxUnfinished) {
+                this.maxUnfinished = difference;
+            }
+            console.log(String(difference / 1024 / 1024) + " MiB unfinished writes");
         };
 
         this.requestedBytes += size;
@@ -195,6 +200,8 @@ class __WebGPUReconstruct_Uint8Writer {
         const fileHandle = await root.getFileHandle(this.filename);
         const file = await fileHandle.getFile();
         console.log("Final capture file size: " + String(file.size / 1024 / 1024) + " MiB");
+
+        console.log("Max unfinished: " + String(this.maxUnfinished / 1024 / 1024) + " MiB. (" + String(this.maxUnfinished / file.size * 100.0) + "%)");
 
         return file;
     }
