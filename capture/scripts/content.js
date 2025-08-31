@@ -43,18 +43,19 @@ class __WebGPUReconstruct_Uint8Writer {
             if (this.captureFile == undefined) {
                 return;
             }
-            await this.captureFile.write({
+            this.captureFile.write({
                 type: "write",
                 data: buffer,
                 position: position,
                 size: size
+            }).then(() => {
+                this.finishedBytes += size;
+                const difference = this.requestedBytes - this.finishedBytes;
+                if (difference > this.maxUnfinished) {
+                    this.maxUnfinished = difference;
+                }
+                console.log(String(difference / 1024 / 1024) + " MiB unfinished writes");
             });
-            this.finishedBytes += size;
-            const difference = this.requestedBytes - this.finishedBytes;
-            if (difference > this.maxUnfinished) {
-                this.maxUnfinished = difference;
-            }
-            console.log(String(difference / 1024 / 1024) + " MiB unfinished writes");
         };
 
         this.requestedBytes += size;
