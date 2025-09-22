@@ -135,4 +135,4 @@ def main():
     configuration = get_configuration()
     build(configuration)
 
-main();
+main()

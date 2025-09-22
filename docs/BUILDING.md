@@ -9,11 +9,6 @@ Install the following dependencies:
 - If building on Linux, [GLFW dependencies](https://www.glfw.org/docs/latest/compile_guide.html#compile_deps)
 
 ## Setup
-Download the repository's submodules. Dawn has a lot of dependencies so this can take a while.
-```
-git submodule update --init --recursive
-```
-
 Use the `configure` script to configure the build. Use `--help` to see the options.
 ```
 python ./configure.py --dawn --wgpu --target release
@@ -40,6 +35,13 @@ Enable Android builds and set the NDK path when configuring the build.
 ```
 python ./configure.py --dawn --wgpu --android --ndk PATH_TO_NDK_DIRECTORY --target release
 ```
+
+## Fetch modules
+Use the `fetch_modules` script to download submodules according to the configuration.
+```
+python ./fetch_modules.py
+```
+Rerun the command after changing the configuration or checking out a new commit.
 
 ## Build
 ```

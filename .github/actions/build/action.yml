@@ -12,30 +12,12 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Checkout glfw
-      shell: bash
-      run: |
-        git submodule update --init --recursive replay/glfw
-
     - name: Install glfw dependencies
       if: ${{ inputs.platform == 'linux' }}
       shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install libwayland-dev libxkbcommon-dev xorg-dev
-
-# Checkout only the necessary WebGPU implementation.
-    - name: Checkout Dawn
-      if: ${{ inputs.backend == 'dawn' }}
-      shell: bash
-      run: |
-        git submodule update --init replay/dawn
-
-    - name: Checkout wgpu-native
-      if: ${{ inputs.backend == 'wgpu' }}
-      shell: bash
-      run: |
-        git submodule update --init --recursive replay/wgpu-native
 
 # Setup correct Java version
     - name: Setup Java
@@ -52,7 +34,7 @@ runs:
       run: |
         sudo apt-get install libxrandr-dev libxinerama-dev libxcursor-dev mesa-common-dev libx11-xcb-dev pkg-config nodejs npm
 
-# Configure and build
+# Configure, fetch modules and build
     - name: Configure build
       if: ${{ inputs.platform != 'android' }}
       shell: bash
@@ -64,6 +46,11 @@ runs:
       shell: bash
       run: |
         python ./configure.py --${{ inputs.backend }} --target release --no-host --android --ndk $ANDROID_NDK
+
+    - name: Fetch modules
+      shell: bash
+      run: |
+        python ./fetch_modules.py
 
     - name: Build
       shell: bash
