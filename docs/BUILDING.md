@@ -22,17 +22,11 @@ python ./configure.py --dawn --wgpu --target release
 ### Dawn
 To build with the Dawn backend (`--dawn`), you need to setup Dawn's dependencies.
 
-- Install [depot_tools](http://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up).
-- If on Windows, add `DEPOT_TOOLS_WIN_TOOLCHAIN` environment variable and set it to `0`.
-- If on Linux, install additional dependencies:
+- If on Linux, install:
   ```
   sudo apt-get install libxrandr-dev libxinerama-dev libxcursor-dev mesa-common-dev libx11-xcb-dev pkg-config nodejs npm
   ```
-- In `replay/dawn/` run:
-  ```
-  cp scripts/standalone.gclient .gclient
-  gclient sync
-  ```
+Otherwise, no additional work is necessary.
 
 ### wgpu
 To build with the wgpu backend (`--wgpu`), you need to setup wgpu's dependencies.

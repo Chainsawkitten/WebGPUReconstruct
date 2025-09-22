@@ -39,6 +39,7 @@ set(SRC
 if (WEBGPU_NATIVE_REPLAY_DAWN_BACKEND)
     set(DAWN_BUILD_SAMPLES OFF CACHE BOOL "Don't build Dawn samples" FORCE)
     set(DAWN_BUILD_PROTOBUF OFF CACHE BOOL "Don't build the protobuf dependencies" FORCE)
+    set(DAWN_FETCH_DEPENDENCIES ON CACHE BOOL "Use fetch_dawn_dependencies.py" FORCE)
     if (WIN32)
         set(DAWN_USE_BUILT_DXC ON CACHE BOOL "Use DXC" FORCE)
         set(DAWN_DXC_ENABLE_ASSERTS_IN_NDEBUG OFF CACHE BOOL "Don't enable assets in DXC in debug builds" FORCE)

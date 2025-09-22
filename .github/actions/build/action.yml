@@ -7,7 +7,7 @@ inputs:
     description: The target platform
   backend:
     required: true
-    description: Which backend to use (wgpu or Dawn)
+    description: Which backend to use (wgpu or dawn)
 
 runs:
   using: composite
@@ -29,7 +29,7 @@ runs:
       if: ${{ inputs.backend == 'dawn' }}
       shell: bash
       run: |
-        git -c submodule."third_party/angle".update=none -c submodule."third_party/swiftshader".update=none submodule update --init --recursive replay/dawn
+        git submodule update --init replay/dawn
 
     - name: Checkout wgpu-native
       if: ${{ inputs.backend == 'wgpu' }}
@@ -46,18 +46,6 @@ runs:
         java-version: '17'
 
 # Dawn dependencies
-    - name: Install Depot Tools
-      if: ${{ inputs.platform == 'linux' && inputs.backend == 'dawn'}}
-      uses: newkdev/setup-depot-tools@v1.0.1
-
-    - name: Gclient sync
-      if: ${{ inputs.platform == 'linux' && inputs.backend == 'dawn'}}
-      shell: bash
-      working-directory: ${{ github.workspace }}/replay/dawn
-      run: |
-        cp scripts/standalone.gclient .gclient
-        gclient sync
-
     - name: Install Dawn dependencies
       if: ${{ inputs.platform == 'linux' && inputs.backend == 'dawn'}}
       shell: bash
