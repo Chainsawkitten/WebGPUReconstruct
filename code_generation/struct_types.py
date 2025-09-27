@@ -130,9 +130,9 @@ class SubStructType:
             cleanup += member[0].cleanup(name + '.' + member[1])
         return cleanup
 
-# Array type.
+# Sequence type.
 arrayDepth = 0
-class ArrayType:
+class SequenceType:
     def __init__(self, type, defaultElement = None):
         self.type = type
         self.defaultElement = defaultElement
@@ -146,13 +146,15 @@ class ArrayType:
         global arrayDepth
         arrayDepth += 1
         plural = self.get_plural_name(name)
-        element = plural + '[i' + str(arrayDepth) + ']'
+        arrayName = 'array' + str(arrayDepth)
+        element = arrayName + '[i' + str(arrayDepth) + ']'
 
         capture = 'if (' + plural + ' == undefined) {\n'
         capture += '__WebGPUReconstruct_file.writeUint64(0);\n'
         capture += '} else {\n'
-        capture += '__WebGPUReconstruct_file.writeUint64(' + plural + '.length);\n'
-        capture += 'for (let i' + str(arrayDepth) + ' = 0; i' + str(arrayDepth) + ' < ' + plural + '.length; i' + str(arrayDepth) + ' += 1) {\n'
+        capture += 'let ' + arrayName + ' = (' + plural + ' instanceof Array) ? ' + plural + ' : Array.from(' + plural + ');\n'
+        capture += '__WebGPUReconstruct_file.writeUint64(' + arrayName + '.length);\n'
+        capture += 'for (let i' + str(arrayDepth) + ' = 0; i' + str(arrayDepth) + ' < ' + arrayName + '.length; i' + str(arrayDepth) + ' += 1) {\n'
         if self.defaultElement != None:
             capture += 'if (' + element + ' == undefined) {\n'
             capture += self.saveElement(self.defaultElement)
@@ -268,7 +270,7 @@ GPURenderPassTimestampWrites = StructType("GPURenderPassTimestampWrites", [
 
 GPURenderPassDescriptor = StructType("GPURenderPassDescriptor", [
     [String, "label"],
-    [ArrayType(GPURenderPassColorAttachment, '{}'), "colorAttachment"],
+    [SequenceType(GPURenderPassColorAttachment, '{}'), "colorAttachment"],
     [GPURenderPassDepthStencilAttachment, "depthStencilAttachment"],
     [GPUQuerySet, "occlusionQuerySet"],
     [GPURenderPassTimestampWrites, "timestampWrites"],
@@ -295,14 +297,14 @@ GPUVertexAttribute = StructType("GPUVertexAttribute", [
 GPUVertexBufferLayout = StructType("GPUVertexBufferLayout", [
     [Uint64, "arrayStride"],
     [GPUVertexStepMode, "stepMode", '"vertex"'],
-    [ArrayType(GPUVertexAttribute), "attribute"]
+    [SequenceType(GPUVertexAttribute), "attribute"]
 ])
 
 GPUVertexState = SubStructType("GPUVertexState", [
     [GPUShaderModule, "module"],
     [String, "entryPoint"],
     [GPUConstants, "constant"],
-    [ArrayType(GPUVertexBufferLayout), "buffer"],
+    [SequenceType(GPUVertexBufferLayout), "buffer"],
 ])
 
 GPUPrimitiveState = SubStructType("GPUPrimitiveState", [
@@ -343,7 +345,7 @@ GPUFragmentState = StructType("GPUFragmentState", [
     [GPUShaderModule, "module"],
     [String, "entryPoint"],
     [GPUConstants, "constant"],
-    [ArrayType(GPUColorTargetState, '{}'), "target"],
+    [SequenceType(GPUColorTargetState, '{}'), "target"],
 ])
 
 GPUMultisampleState = SubStructType("GPUMultisampleState", [
@@ -377,13 +379,13 @@ GPUTextureDescriptor = StructType("GPUTextureDescriptor", [
     [GPUTextureDimension, "dimension", '"2d"'],
     [GPUTextureFormat, "format"],
     [Uint32, "usage"],
-    [ArrayType(GPUTextureFormat), "viewFormat"]
+    [SequenceType(GPUTextureFormat), "viewFormat"]
 ])
 
 GPUBindGroupDescriptor = StructType("GPUBindGroupDescriptor", [
     [String, "label"],
     [GPUBindGroupLayout, "layout"],
-    [ArrayType(GPUBindGroupEntry), "entry"]
+    [SequenceType(GPUBindGroupEntry), "entry"]
 ])
 
 GPUSamplerDescriptor = StructType("GPUSamplerDescriptor", [
@@ -441,12 +443,12 @@ GPUBindGroupLayoutEntry = StructType("GPUBindGroupLayoutEntry", [
 
 GPUBindGroupLayoutDescriptor = StructType("GPUBindGroupLayoutDescriptor", [
     [String, "label"],
-    [ArrayType(GPUBindGroupLayoutEntry), "entry"]
+    [SequenceType(GPUBindGroupLayoutEntry), "entry"]
 ])
 
 GPUPipelineLayoutDescriptor = StructType("GPUPipelineLayoutDescriptor", [
     [String, "label"],
-    [ArrayType(GPUBindGroupLayout), "bindGroupLayout"]
+    [SequenceType(GPUBindGroupLayout), "bindGroupLayout"]
 ])
 
 GPUProgrammableStageDescriptor = SubStructType("GPUProgrammableStageDescriptor", [
@@ -480,7 +482,7 @@ GPUQuerySetDescriptor = StructType("GPUQuerySetDescriptor", [
 
 GPURenderBundleEncoderDescriptor = StructType("GPURenderBundleEncoderDescriptor", [
     [String, "label"],
-    [ArrayType(GPUTextureFormat), "colorFormat"],
+    [SequenceType(GPUTextureFormat), "colorFormat"],
     [GPUTextureFormat, "depthStencilFormat"],
     [Uint32, "sampleCount", '1'],
     [Bool, "depthReadOnly"],

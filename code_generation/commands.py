@@ -65,7 +65,7 @@ def add_simple_command(classType, methodName, nativeCommand, returnType, argumen
         replay += argument.declare_argument(argumentName)
         replay += argument.load(argumentName)
         
-        if isinstance(argument, ArrayType):
+        if isinstance(argument, SequenceType):
             argumentName = argument.get_plural_name(argumentName)
         
         arguments2.append(argumentName)
@@ -125,9 +125,10 @@ if (offsets0 instanceof Uint32Array && offsets1 != undefined && offsets2 != unde
         __WebGPUReconstruct_file.writeUint32(offsets0[offsets1 + i]);
     }
 } else {
+    offsets0 = (offsets0 instanceof Array) ? offsets0 : Array.from(offsets0);
     __WebGPUReconstruct_file.writeUint64(offsets0.length);
     for (let i = 0; i < offsets0.length; i += 1) {
-    __WebGPUReconstruct_file.writeUint32(offsets0[i]);
+        __WebGPUReconstruct_file.writeUint32(offsets0[i]);
     }
 }
 """, """
@@ -229,7 +230,7 @@ add_simple_command(GPURenderPassEncoder, "setBlendConstant", "wgpuRenderPassEnco
 add_simple_command(GPURenderPassEncoder, "setStencilReference", "wgpuRenderPassEncoderSetStencilReference", undefined, [Uint32])
 add_simple_command(GPURenderPassEncoder, "beginOcclusionQuery", "wgpuRenderPassEncoderBeginOcclusionQuery", undefined, [Uint32])
 add_simple_command(GPURenderPassEncoder, "endOcclusionQuery", "wgpuRenderPassEncoderEndOcclusionQuery", undefined, [])
-add_simple_command(GPURenderPassEncoder, "executeBundles", "wgpuRenderPassEncoderExecuteBundles", undefined, [ArrayType(GPURenderBundle)])
+add_simple_command(GPURenderPassEncoder, "executeBundles", "wgpuRenderPassEncoderExecuteBundles", undefined, [SequenceType(GPURenderBundle)])
 add_simple_command(GPURenderPassEncoder, "end", "wgpuRenderPassEncoderEnd", undefined, [], "wgpuRenderPassEncoderRelease(subject);\n")
 add_simple_command(GPURenderPassEncoder, "pushDebugGroup", "wgpuRenderPassEncoderPushDebugGroup", undefined, [String])
 add_simple_command(GPURenderPassEncoder, "popDebugGroup", "wgpuRenderPassEncoderPopDebugGroup", undefined, [])
@@ -256,7 +257,7 @@ add_simple_command(GPURenderBundleEncoder, "drawIndexed", "wgpuRenderBundleEncod
 add_simple_command(GPURenderBundleEncoder, "drawIndirect", "wgpuRenderBundleEncoderDrawIndirect", undefined, [GPUBuffer, Uint64])
 add_simple_command(GPURenderBundleEncoder, "drawIndexedIndirect", "wgpuRenderBundleEncoderDrawIndexedIndirect", undefined, [GPUBuffer, Uint64])
 
-add_simple_command(GPUQueue, "submit", "wgpuQueueSubmit", undefined, [ArrayType(GPUCommandBuffer)])
+add_simple_command(GPUQueue, "submit", "wgpuQueueSubmit", undefined, [SequenceType(GPUCommandBuffer)])
 
 add_custom_command(GPUCanvasContext, "configure", ["configuration"], """
 __WebGPUReconstruct_DebugOutput("configure");
@@ -271,7 +272,7 @@ if (configuration.usage == undefined) {
 __WebGPUReconstruct_file.writeUint32(configuration.usage);
 __WebGPUReconstruct_file.writeUint32(this.canvas.width);
 __WebGPUReconstruct_file.writeUint32(this.canvas.height);
-""" + GPUTextureFormat.save("configuration.format") + ArrayType(GPUTextureFormat).save("configuration.viewFormat") + """
+""" + GPUTextureFormat.save("configuration.format") + SequenceType(GPUTextureFormat).save("configuration.viewFormat") + """
 """, """
 DebugOutput("configure\\n");
 const uint32_t canvasID = reader.ReadUint32();
@@ -286,7 +287,7 @@ if (texture.texture != nullptr) {
 texture.usage = reader.ReadUint32() | WGPUTextureUsage_TextureBinding;
 texture.width = reader.ReadUint32();
 texture.height = reader.ReadUint32();
-""" + GPUTextureFormat.load("texture.format") + ArrayType(GPUTextureFormat).load("texture.viewFormat") + """
+""" + GPUTextureFormat.load("texture.format") + SequenceType(GPUTextureFormat).load("texture.viewFormat") + """
 
 WGPUTextureDescriptor descriptor = {};
 descriptor.usage = texture.usage;
