@@ -3,10 +3,6 @@ from code_generation.enum_types import *
 from code_generation.chained_types import *
 from code_generation.unsupported_type import *
 
-structSaveFunctionsString = ""
-structLoadFunctionsString = ""
-structFunctionDeclarationsString = ""
-
 # Composite type.
 class StructType:
     def __init__(self, webName, members):

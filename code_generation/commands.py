@@ -501,15 +501,7 @@ if (ArrayBuffer.isView(data)) {
     dataUint8 = new Uint8Array(data);
 }
 
-let size2 = size;
-if (size2 instanceof Array) {
-    size2 = {
-        width: size[0],
-        height: size[1],
-        depthOrArrayLayers: size[2]
-    };
-}
-
+""" + GPUExtent3D.to_dictionary("size", "size2") + """
 // Data layout
 let dataLayout2 = {
     offset: 0,
@@ -577,14 +569,7 @@ if (blockSize.x != 1 || blockSize.y != 1) {
 if (destination.texture.sampleCount > 1) {
     console.error("copyExternalImageToTexture with sampleCount > 1 not supported by WebGPUReconstruct.");
 }
-let size = copySize;
-if (copySize instanceof Array) {
-    size = {
-        width: copySize[0],
-        height: copySize[1],
-        depthOrArrayLayers: copySize[2]
-    };
-}
+""" + GPUExtent3D.to_dictionary("copySize", "size") + """
 
 // Data layout
 let dataLayout = {
