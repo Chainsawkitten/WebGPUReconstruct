@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7.0)
+cmake_minimum_required(VERSION 3.22.0)
 
 project(WebGPUNativeReplay)
 
@@ -37,6 +37,7 @@ set(SRC
 
 # Dawn
 if (WEBGPU_NATIVE_REPLAY_DAWN_BACKEND)
+    set(DAWN_BUILD_MONOLITHIC_LIBRARY STATIC CACHE STRING "Build static monolithic library" FORCE)
     set(DAWN_BUILD_SAMPLES OFF CACHE BOOL "Don't build Dawn samples" FORCE)
     set(DAWN_BUILD_PROTOBUF OFF CACHE BOOL "Don't build the protobuf dependencies" FORCE)
     set(DAWN_FETCH_DEPENDENCIES ON CACHE BOOL "Use fetch_dawn_dependencies.py" FORCE)
