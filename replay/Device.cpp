@@ -31,6 +31,7 @@ Device::Device(Adapter& adapter) {
         WGPUFeatureName_ClipDistances,
 #if WEBGPU_BACKEND_DAWN
         WGPUFeatureName_Subgroups,
+        WGPUFeatureName_PrimitiveIndex,
 #endif
     };
     for (WGPUFeatureName feature : desiredFeatures) {

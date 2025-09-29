@@ -374,7 +374,7 @@ function __WebGPUReconstruct_get_bytes_per_block(format) {
 }
 
 // Features supported by WebGPUReconstruct. We will pretend the adapter doesn't support any other features.
-// TODO: dual-source-blending, texture-formats-tier1, texture-formats-tier2, primitive-index
+// TODO: dual-source-blending, texture-formats-tier1, texture-formats-tier2
 const __WebGPUReconstruct_supportedFeatures = new Set([
     "core-features-and-limits",
     "depth-clip-control",
@@ -393,6 +393,7 @@ const __WebGPUReconstruct_supportedFeatures = new Set([
     "float32-blendable",
     "clip-distances",
     "subgroups",
+    "primitive-index",
 ]);
 
 function __WebGPUReconstruct_GPUAdapter_requestDevice(originalMethod, descriptor) {
