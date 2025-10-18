@@ -458,22 +458,18 @@ function __WebGPUReconstruct_GPU_requestAdapter(originalMethod, options) {
 }
 
 let __WebGPUReconstruct_firstAnimationFrame = true;
+let __WebGPUReconstruct_getCurrentTexture_called = false;
 
 function __WebGPUReconstruct_requestAnimationFrame_callback(timestamp) {
-    __WebGPUReconstruct_file.writeUint32(2);
-    __WebGPUReconstruct_file.writeUint32(1);
-    __webGPUReconstruct.animationFrameID = __webGPUReconstruct.requestAnimationFrame_original.call(window, __WebGPUReconstruct_requestAnimationFrame_callback);
-}
-
-function __WebGPUReconstruct_requestAnimationFrame_wrapper(originalMethod, callback) {
-    __WebGPUReconstruct_DebugOutput("requestAnimationFrame");
-    
     if (__WebGPUReconstruct_firstAnimationFrame) {
+        __WebGPUReconstruct_file.writeUint32(1);
         __WebGPUReconstruct_firstAnimationFrame = false;
-        __webGPUReconstruct.animationFrameID = originalMethod.call(this, __WebGPUReconstruct_requestAnimationFrame_callback);
+    } else if (__WebGPUReconstruct_getCurrentTexture_called) {
+        __WebGPUReconstruct_file.writeUint32(2);
+        __WebGPUReconstruct_file.writeUint32(1);
+        __WebGPUReconstruct_getCurrentTexture_called = false;
     }
-    
-    originalMethod.call(this, callback);
+    __webGPUReconstruct.animationFrameID = requestAnimationFrame.call(window, __WebGPUReconstruct_requestAnimationFrame_callback);
 }
 
 function __WebGPUReconstruct_getExternalTextureBlitPipeline(device) {
@@ -610,12 +606,13 @@ class __WebGPUReconstruct {
         
         GPUAdapter.prototype.requestDevice = this.wrapMethodPre(GPUAdapter.prototype.requestDevice, __WebGPUReconstruct_GPUAdapter_requestDevice, "GPUAdapter_requestDevice");
         GPU.prototype.requestAdapter = this.wrapMethodPre(GPU.prototype.requestAdapter, __WebGPUReconstruct_GPU_requestAdapter, "GPU_requestAdapter");
-        requestAnimationFrame = this.wrapMethodPre(requestAnimationFrame, __WebGPUReconstruct_requestAnimationFrame_wrapper, "requestAnimationFrame");
         GPUBuffer.prototype.unmap = this.wrapMethodPre(GPUBuffer.prototype.unmap, __WebGPUReconstruct_GPUBuffer_unmap, "GPUBuffer_unmap");
         GPUDevice.prototype.createRenderPipelineAsync = this.wrapMethodPre(GPUDevice.prototype.createRenderPipelineAsync, __WebGPUReconstruct_GPUDevice_createRenderPipelineAsync, "GPUDevice_createRenderPipelineAsync");
         GPUDevice.prototype.createComputePipelineAsync = this.wrapMethodPre(GPUDevice.prototype.createComputePipelineAsync, __WebGPUReconstruct_GPUDevice_createComputePipelineAsync, "GPUDevice_createComputePipelineAsync");
 
 $WRAP_COMMANDS
+
+        requestAnimationFrame(__WebGPUReconstruct_requestAnimationFrame_callback);
     }
     
     wrapMethodPost(originalMethod, hook, originalName) {
@@ -643,7 +640,9 @@ $WRAP_COMMANDS
 
     finishCapture() {
         // End of last frame.
-        __WebGPUReconstruct_file.writeUint32(2);
+        if (__WebGPUReconstruct_getCurrentTexture_called) {
+            __WebGPUReconstruct_file.writeUint32(2);
+        }
         
         // End of capture.
         __WebGPUReconstruct_file.writeUint32(0);
@@ -655,7 +654,6 @@ $WRAP_COMMANDS
         // Reset wrapped functions.
         GPUAdapter.prototype.requestDevice = this.GPUAdapter_requestDevice_original;
         GPU.prototype.requestAdapter = this.GPU_requestAdapter_original;
-        requestAnimationFrame = this.requestAnimationFrame_original;
         GPUBuffer.prototype.unmap = this.GPUBuffer_unmap_original;
         GPUDevice.prototype.createRenderPipelineAsync = this.GPUDevice_createRenderPipelineAsync_original;
         GPUDevice.prototype.createComputePipelineAsync = this.GPUDevice_createComputePipelineAsync_original;

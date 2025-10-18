@@ -81,7 +81,9 @@ void TestApp::RunCapture(string_view filename, std::function<bool(void)> frameCa
 
         stringstream stats;
         stats << "Ran " << frameCount << " frames in " << duration.count() << " seconds (" << (static_cast<double>(frameCount) / duration.count()) << " FPS).\n";
-        stats << "Of which " << emptyFrames << " frames were empty (contained no commands).\n";
+        if (emptyFrames > 0) {
+            stats << "Of which " << emptyFrames << " frames were empty (contained no commands).\n";
+        }
         stats << setprecision(4) << fixed;
         stats << "Start UNIX timestamp: " << startUnixTimestamp.count() / 1000.0 << "\n";
         stats << "End UNIX timestamp: " << endUnixTimestamp.count() / 1000.0 << "\n";

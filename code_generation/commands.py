@@ -311,6 +311,7 @@ __WebGPUReconstruct_AddId(result);
 __WebGPUReconstruct_file.writeUint32(result.__id);
 __WebGPUReconstruct_file.writeUint32(this.canvas.width);
 __WebGPUReconstruct_file.writeUint32(this.canvas.height);
+__WebGPUReconstruct_getCurrentTexture_called = true;
 """, """
 DebugOutput("getCurrentTexture\\n");
 const uint32_t canvasID = reader.ReadUint32();
