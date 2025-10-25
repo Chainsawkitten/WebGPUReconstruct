@@ -62,3 +62,21 @@ The file will be treated as a file download. Locate it wherever your browser sto
 The browser extension will run on all web pages, even ones which don't use WebGPU. It *will* affect both CPU and GPU performance. It is strongly recommended to disable the extension during regular web browsing and only enable it when you want to capture WebGPU content. You don't need to uninstall the extension to disable it. Both Firefox and Chromium browsers provide a checkbox next to the extension which can be used to quickly toggle it on/off.
 
 Note that after enabling the extension you will need to reload any web page you want to capture.
+
+## Capturing content programmatically
+In addition to the browser extension, WebGPUReconstruct also provides a JavaScript module which can be included in your code to programmatically take captures.
+
+- Copy the module `capture/module/WebGPUReconstruct.js` into your project.
+- Import the module.
+  ```
+  import WebGPUReconstruct from "./WebGPUReconstruct.js";
+  ```
+- Start the capture.
+  ```
+  WebGPUReconstruct.start();
+  ```
+  This must be called before any use of `navigator.gpu` or `HTMLCanvasElement.getContext("webgpu")`.
+- Finish the capture.
+  ```
+  WebGPUReconstruct.finish();
+  ```

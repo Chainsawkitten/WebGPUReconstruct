@@ -21,8 +21,9 @@ def run(workingDirectory, arguments, runInShell = False):
 
 def build_capture(configuration):
     print("Building capture browser extension")
-    write_capture_files(configuration, "chromium")
-    write_capture_files(configuration, "firefox")
+    write_browser_extension(configuration, "chromium")
+    write_browser_extension(configuration, "firefox")
+    write_module(configuration)
 
 def build_replay_host(configuration):
     print("Building WebGPUNativeReplay for the host platform")

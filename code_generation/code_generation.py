@@ -1,6 +1,7 @@
 import shutil
 import os
 import subprocess
+from pathlib import Path
 
 version = (1, 0)
 # Increment the file version whenever a change is introduced.
@@ -33,7 +34,18 @@ def add_prefix_to_file(filename, prefix):
     file.write(contents)
     file.close()
 
-def write_capture_files(configuration, browser):
+def add_suffix_to_file(filename, suffix):
+    file = open(filename, "r")
+    contents = file.read()
+    file.close()
+    
+    contents = contents + suffix
+    
+    file = open(filename, "w")
+    file.write(contents)
+    file.close()
+
+def write_browser_extension(configuration, browser):
     shutil.copytree("capture", "build/capture/" + browser, dirs_exist_ok=True)
     manifestPath = "build/capture/" + browser + "/manifest.json"
     replace_string_in_file(manifestPath, "$VERSION", versionString)
@@ -59,17 +71,49 @@ def write_capture_files(configuration, browser):
 """)
     
     contentPath = "build/capture/" + browser + "/scripts/content.js"
-    add_prefix_to_file(contentPath, "const __WebGPUReconstruct_DEBUG = " + ("true" if configuration["debug"] else "false") + ";\n")
-    replace_string_in_file(contentPath, "$FILE_VERSION", str(fileVersion))
-    replace_string_in_file(contentPath, "$VERSION_MAJOR", str(version[0]))
-    replace_string_in_file(contentPath, "$VERSION_MINOR", str(version[1]))
-    replace_string_in_file(contentPath, "$CAPTURE_COMMANDS", captureCommandsString)
-    replace_string_in_file(contentPath, "$WRAP_COMMANDS", wrapCommandsString)
-    replace_string_in_file(contentPath, "$RESET_COMMANDS", resetCommandsString)
-    replace_string_in_file(contentPath, "$ENUM_SAVE_FUNCTIONS", enumSaveFunctionsString)
-    replace_string_in_file(contentPath, "$STRUCT_SAVE_FUNCTIONS", structSaveFunctionsString)
+    write_content_script(contentPath, configuration)
+    add_suffix_to_file(contentPath, """
+let __webGPUReconstruct = new __WebGPUReconstruct();
+
+// Listener that listens for the "capture" button to be pressed.
+// When this happens, finish up the capture and store it to file.
+document.addEventListener('__WebGPUReconstruct_saveCapture', function() {
+    __webGPUReconstruct.finishCapture();
+});
+""")
     
     shutil.make_archive("build/capture/" + browser, 'zip', "build/capture/" + browser)
+
+def write_module(configuration):
+    Path("build/capture/module").mkdir(parents=True, exist_ok=True)
+    contentPath = "build/capture/module/WebGPUReconstruct.js"
+    shutil.copyfile("capture/scripts/content.js", contentPath)
+    write_content_script(contentPath, configuration)
+    add_suffix_to_file(contentPath, """
+let __webGPUReconstruct;
+
+function start() {
+    __webGPUReconstruct = new __WebGPUReconstruct();
+}
+
+function finish() {
+    __webGPUReconstruct.finishCapture();
+}
+
+export default { start, finish };
+""")
+
+def write_content_script(path, configuration):
+    add_prefix_to_file(path, "const __WebGPUReconstruct_DEBUG = " + ("true" if configuration["debug"] else "false") + ";\n")
+    replace_string_in_file(path, "$FILE_VERSION", str(fileVersion))
+    replace_string_in_file(path, "$VERSION_MAJOR", str(version[0]))
+    replace_string_in_file(path, "$VERSION_MINOR", str(version[1]))
+    replace_string_in_file(path, "$CAPTURE_COMMANDS", captureCommandsString)
+    replace_string_in_file(path, "$WRAP_COMMANDS", wrapCommandsString)
+    replace_string_in_file(path, "$RESET_COMMANDS", resetCommandsString)
+    replace_string_in_file(path, "$ENUM_SAVE_FUNCTIONS", enumSaveFunctionsString)
+    replace_string_in_file(path, "$STRUCT_SAVE_FUNCTIONS", structSaveFunctionsString)
+    
 
 def run_query(rootDir, workingDirectory, arguments):
     os.chdir(rootDir + workingDirectory)

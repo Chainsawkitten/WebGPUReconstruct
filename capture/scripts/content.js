@@ -600,6 +600,8 @@ class __WebGPUReconstruct {
     constructor() {
         __WebGPUReconstruct_DebugOutput("Starting WebGPU Reconstruct");
         
+        this.firstCapture = true;
+        
         __WebGPUReconstruct_file.writeUint32($FILE_VERSION);
         __WebGPUReconstruct_file.writeUint32($VERSION_MAJOR);
         __WebGPUReconstruct_file.writeUint32($VERSION_MINOR);
@@ -639,6 +641,12 @@ $WRAP_COMMANDS
     }
 
     finishCapture() {
+        if (!this.firstCapture) {
+            console.error("You need to reload the page between captures.");
+            return;
+        }
+        this.firstCapture = false;
+
         // End of last frame.
         if (__WebGPUReconstruct_getCurrentTexture_called) {
             __WebGPUReconstruct_file.writeUint32(2);
@@ -659,27 +667,13 @@ $WRAP_COMMANDS
         GPUDevice.prototype.createComputePipelineAsync = this.GPUDevice_createComputePipelineAsync_original;
 
 $RESET_COMMANDS
+
+        const blob = new Blob(__WebGPUReconstruct_file.arrays);
+
+        // Create and click on a download link to save capture.
+        let a = document.createElement('a');
+        a.download = "capture.wgpur"
+        a.href = URL.createObjectURL(blob);
+        a.click();
     }
 }
-
-let __webGPUReconstruct = new __WebGPUReconstruct();
-
-// Listener that listens for the "capture" button to be pressed.
-// When this happens, finish up the capture and store it to file.
-let __WebGPUReconstruct_firstCapture = true;
-document.addEventListener('__WebGPUReconstruct_saveCapture', function() {
-    if (!__WebGPUReconstruct_firstCapture) {
-        console.error("You need to reload the page between captures.");
-        return;
-    }
-    __WebGPUReconstruct_firstCapture = false;
-    __webGPUReconstruct.finishCapture();
-    
-    const blob = new Blob(__WebGPUReconstruct_file.arrays);
-    
-    // Create and click on a download link to save capture.
-    let a = document.createElement('a');
-    a.download = "capture.wgpur"
-    a.href = URL.createObjectURL(blob);
-    a.click();
-});
