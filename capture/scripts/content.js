@@ -469,7 +469,7 @@ function __WebGPUReconstruct_requestAnimationFrame_callback(timestamp) {
         __WebGPUReconstruct_file.writeUint32(1);
         __WebGPUReconstruct_getCurrentTexture_called = false;
     }
-    __webGPUReconstruct.animationFrameID = requestAnimationFrame.call(window, __WebGPUReconstruct_requestAnimationFrame_callback);
+    __webGPUReconstruct.animationFrameID = requestAnimationFrame(__WebGPUReconstruct_requestAnimationFrame_callback);
 }
 
 function __WebGPUReconstruct_getExternalTextureBlitPipeline(device) {
@@ -670,10 +670,15 @@ $RESET_COMMANDS
 
         const blob = new Blob(__WebGPUReconstruct_file.arrays);
 
-        // Create and click on a download link to save capture.
-        let a = document.createElement('a');
-        a.download = "capture.wgpur"
-        a.href = URL.createObjectURL(blob);
-        a.click();
+        if (typeof(document) !== "undefined") {
+            // Create and click on a download link to save capture.
+            let a = document.createElement('a');
+            a.download = "capture.wgpur"
+            a.href = URL.createObjectURL(blob);
+            a.click();
+        } else {
+            // Post a message for the main script to handle.
+            postMessage({ type: "WebGPUCapture", data: blob });
+        }
     }
 }
