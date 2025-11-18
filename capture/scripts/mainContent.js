@@ -445,15 +445,17 @@ $CAPTURE_COMMANDS
 function __WebGPUReconstruct_GPU_requestAdapter(originalMethod, options) {
     __WebGPUReconstruct_DebugOutput("requestAdapter");
     
-    return originalMethod.call(this, options).then((adapter) => {
-        let features = new Set();
-        for (const value of adapter.features) {
-            if (__WebGPUReconstruct_supportedFeatures.has(value)) {
-                features.add(value);
+    return __webGPUReconstruct.optionsPromise.then(() => {
+        return originalMethod.call(this, options).then((adapter) => {
+            let features = new Set();
+            for (const value of adapter.features) {
+                if (__WebGPUReconstruct_supportedFeatures.has(value)) {
+                    features.add(value);
+                }
             }
-        }
-        adapter.__defineGetter__("features", function() { return features;});
-        return adapter;
+            adapter.__defineGetter__("features", function() { return features;});
+            return adapter;
+        });
     });
 }
 
@@ -637,6 +639,19 @@ $WRAP_COMMANDS
         return function() {
             const args = [...arguments];
             return hook.call(this, originalMethod, ...args);
+        }
+    }
+
+    configure(configuration) {
+        this.configuration = configuration;
+        if (this.configuration == undefined) {
+            this.configuration = {};
+        }
+        
+        if (this.configuration.externalTextureScale === undefined) {
+            this.configuration.externalTextureScale = 100;
+        } else {
+            this.configuration.externalTextureScale = Number(this.configuration.externalTextureScale);
         }
     }
 

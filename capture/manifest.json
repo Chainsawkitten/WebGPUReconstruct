@@ -12,8 +12,7 @@
     "permissions": [
         "activeTab",
         "scripting",
-        "storage",
-        "unlimitedStorage"
+        "storage"
     ],
     "action": {
         "default_title": "Save WebGPU capture",
@@ -21,14 +20,24 @@
     },
     "content_scripts": [
         {
-            "js": ["scripts/content.js"],
+            "js": ["scripts/mainContent.js"],
             "matches": [
                 "http://*/*",
                 "https://*/*"
             ],
             "run_at": "document_start",
             "world": "MAIN"
+        },
+        {
+            "js": ["scripts/isolatedContent.js"],
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "run_at": "document_end",
+            "world": "ISOLATED"
         }
     ],
+    "options_page": "options.html",
     $BROWSER_SPECIFIC
 }

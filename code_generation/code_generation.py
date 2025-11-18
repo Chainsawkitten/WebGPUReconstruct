@@ -70,7 +70,7 @@ def write_browser_extension(configuration, browser):
     }
 """)
     
-    contentPath = "build/capture/" + browser + "/scripts/content.js"
+    contentPath = "build/capture/" + browser + "/scripts/mainContent.js"
     write_content_script(contentPath, configuration)
     add_suffix_to_file(contentPath, """
 let __webGPUReconstruct = new __WebGPUReconstruct();
@@ -80,6 +80,16 @@ let __webGPUReconstruct = new __WebGPUReconstruct();
 document.addEventListener('__WebGPUReconstruct_saveCapture', function() {
     __webGPUReconstruct.finishCapture();
 });
+
+__webGPUReconstruct.optionsPromise = new Promise((resolve) => {
+    window.addEventListener("message", function __WebGPUReconstruct_MessageListener(event) {
+        if (event.source === window && event?.data?.type === "WebGPUReconstruct Options") {
+            __webGPUReconstruct.configure(event.data.message);
+            window.removeEventListener("message", __WebGPUReconstruct_MessageListener);
+            resolve();
+        }
+    });
+});
 """)
     
     shutil.make_archive("build/capture/" + browser, 'zip', "build/capture/" + browser)
@@ -87,13 +97,15 @@ document.addEventListener('__WebGPUReconstruct_saveCapture', function() {
 def write_module(configuration):
     Path("build/capture/module").mkdir(parents=True, exist_ok=True)
     contentPath = "build/capture/module/WebGPUReconstruct.js"
-    shutil.copyfile("capture/scripts/content.js", contentPath)
+    shutil.copyfile("capture/scripts/mainContent.js", contentPath)
     write_content_script(contentPath, configuration)
     add_suffix_to_file(contentPath, """
 let __webGPUReconstruct;
 
-function start() {
+function start(configuration) {
     __webGPUReconstruct = new __WebGPUReconstruct();
+    __webGPUReconstruct.configure(configuration);
+    __webGPUReconstruct.optionsPromise = new Promise((resolve) => { resolve() });
 }
 
 function finish() {

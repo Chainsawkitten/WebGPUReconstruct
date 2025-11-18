@@ -683,6 +683,18 @@ if (descriptor.source instanceof HTMLVideoElement) {
 } else {
     console.error("Unknown source in importExternalTexture");
 }
+
+// Scale external textures to save memory / disk space.
+const externalTextureScale = __webGPUReconstruct.configuration.externalTextureScale / 100;
+width = Math.floor(width * externalTextureScale);
+height = Math.floor(height * externalTextureScale);
+if (width <= 0) {
+    width = 1;
+}
+if (height <= 0) {
+    height = 1;
+}
+
 __WebGPUReconstruct_file.writeUint32(width);
 __WebGPUReconstruct_file.writeUint32(height);
 
