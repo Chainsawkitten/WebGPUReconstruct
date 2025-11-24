@@ -461,6 +461,7 @@ function __WebGPUReconstruct_GPU_requestAdapter(originalMethod, options) {
 
 let __WebGPUReconstruct_firstAnimationFrame = true;
 let __WebGPUReconstruct_getCurrentTexture_called = false;
+let __WebGPUReconstruct_frameCount = 0;
 
 function __WebGPUReconstruct_requestAnimationFrame_callback(timestamp) {
     if (__WebGPUReconstruct_firstAnimationFrame) {
@@ -468,6 +469,12 @@ function __WebGPUReconstruct_requestAnimationFrame_callback(timestamp) {
         __WebGPUReconstruct_firstAnimationFrame = false;
     } else if (__WebGPUReconstruct_getCurrentTexture_called) {
         __WebGPUReconstruct_file.writeUint32(2);
+        
+        __WebGPUReconstruct_frameCount += 1;
+        if (__WebGPUReconstruct_frameCount == __webGPUReconstruct.configuration.captureMaxFrames) {
+            __webGPUReconstruct.finishCapture();
+        }
+        
         __WebGPUReconstruct_file.writeUint32(1);
         __WebGPUReconstruct_getCurrentTexture_called = false;
     }
@@ -648,15 +655,21 @@ $WRAP_COMMANDS
         if (this.configuration == undefined) {
             this.configuration = {};
         }
-        
+
+        if (this.configuration.captureFilename === undefined) {
+            this.configuration.captureFilename = "capture.wgpur";
+        }
+
+        if (this.configuration.captureMaxFrames === undefined) {
+            this.configuration.captureMaxFrames = 0;
+        } else {
+            this.configuration.captureMaxFrames = Number(this.configuration.captureMaxFrames);
+        }
+
         if (this.configuration.externalTextureScale === undefined) {
             this.configuration.externalTextureScale = 100;
         } else {
             this.configuration.externalTextureScale = Number(this.configuration.externalTextureScale);
-        }
-        
-        if (this.configuration.captureFilename === undefined) {
-            this.configuration.captureFilename = "capture.wgpur";
         }
     }
 
