@@ -617,6 +617,7 @@ class __WebGPUReconstruct {
 $WRAP_COMMANDS
 
         requestAnimationFrame(__WebGPUReconstruct_requestAnimationFrame_callback);
+        this.configure({});
     }
     
     wrapMethodPost(originalMethod, hook, originalName) {
@@ -653,6 +654,10 @@ $WRAP_COMMANDS
         } else {
             this.configuration.externalTextureScale = Number(this.configuration.externalTextureScale);
         }
+        
+        if (this.configuration.captureFilename === undefined) {
+            this.configuration.captureFilename = "capture.wgpur";
+        }
     }
 
     finishCapture() {
@@ -688,7 +693,7 @@ $RESET_COMMANDS
         if (typeof(document) !== "undefined") {
             // Create and click on a download link to save capture.
             let a = document.createElement('a');
-            a.download = "capture.wgpur"
+            a.download = this.configuration.captureFilename;
             a.href = URL.createObjectURL(blob);
             a.click();
         } else {

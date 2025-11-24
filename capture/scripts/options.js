@@ -1,8 +1,10 @@
 const saveOptions = () => {
+    const captureFilename = document.getElementById('captureFilename').value;
     const externalTextureScale = document.getElementById('externalTextureScale').value;
 
     chrome.storage.local.set(
         {
+            captureFilename: captureFilename,
             externalTextureScale: externalTextureScale
         },
         () => {
@@ -19,9 +21,11 @@ const saveOptions = () => {
 const restoreOptions = () => {
     chrome.storage.local.get(
         {
-            externalTextureScale: 100
+            captureFilename: "capture.wgpur",
+            externalTextureScale: "100"
         },
         (items) => {
+            document.getElementById('captureFilename').value = items.captureFilename;
             document.getElementById('externalTextureScale').value = items.externalTextureScale;
         }
     );

@@ -1,6 +1,7 @@
 chrome.storage.local.get(
     {
-        externalTextureScale: 100
+        captureFilename: "capture.wgpur",
+        externalTextureScale: "100"
     },
     (items) => {
         window.postMessage({ type: "WebGPUReconstruct Options", message: items }, "*");
