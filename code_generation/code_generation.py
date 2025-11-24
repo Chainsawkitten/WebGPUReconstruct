@@ -82,12 +82,10 @@ document.addEventListener('__WebGPUReconstruct_saveCapture', function() {
 });
 
 __webGPUReconstruct.optionsPromise = new Promise((resolve) => {
-    window.addEventListener("message", function __WebGPUReconstruct_MessageListener(event) {
-        if (event.source === window && event?.data?.type === "WebGPUReconstruct Options") {
-            __webGPUReconstruct.configure(event.data.message);
-            window.removeEventListener("message", __WebGPUReconstruct_MessageListener);
-            resolve();
-        }
+    window.addEventListener("__WebGPUReconstruct_options", function __WebGPUReconstruct_Options(event) {
+        __webGPUReconstruct.configure(JSON.parse(event.detail));
+        window.removeEventListener("__WebGPUReconstruct_options", __WebGPUReconstruct_Options);
+        resolve();
     });
 });
 """)

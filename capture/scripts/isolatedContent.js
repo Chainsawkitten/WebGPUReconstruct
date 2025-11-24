@@ -5,6 +5,6 @@ chrome.storage.local.get(
         externalTextureScale: "100"
     },
     (items) => {
-        window.postMessage({ type: "WebGPUReconstruct Options", message: items }, "*");
+        window.dispatchEvent(new CustomEvent("__WebGPUReconstruct_options", { detail: JSON.stringify(items) }));
     }
 );
