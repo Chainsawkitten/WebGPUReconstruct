@@ -405,7 +405,9 @@ function __WebGPUReconstruct_GPUAdapter_requestDevice(originalMethod, descriptor
     
     if (descriptor != undefined) {
         overrideDescriptor.label = descriptor.label;
-        overrideDescriptor.requiredLimits = descriptor.requiredLimits;
+        if (!__webGPUReconstruct.configuration.adapterDefaultLimits) {
+            overrideDescriptor.requiredLimits = descriptor.requiredLimits;
+        }
         overrideDescriptor.defaultQueue = descriptor.defaultQueue;
         
         if (descriptor.requiredFeatures != undefined) {
@@ -442,6 +444,48 @@ $STRUCT_SAVE_FUNCTIONS
 // Generated code will be inserted here.
 $CAPTURE_COMMANDS
 
+function __WebGPUReconstruct_getDefaultLimits(compatibility) {
+    let limits = {
+        maxTextureDimension1D: compatibility ? 4096 : 8192,
+        maxTextureDimension2D: compatibility ? 4096 : 8192,
+        maxTextureDimension3D: 2048,
+        maxTextureArrayLayers: 256,
+        maxBindGroups: 4,
+        maxBindGroupsPlusVertexBuffers: 24,
+        maxBindingsPerBindGroup: 1000,
+        maxDynamicUniformBuffersPerPipelineLayout: 8,
+        maxDynamicStorageBuffersPerPipelineLayout: 4,
+        maxSampledTexturesPerShaderStage: 16,
+        maxSamplersPerShaderStage: 16,
+        maxStorageBuffersPerShaderStage: 8,
+        maxStorageBuffersInVertexStage: compatibility ? 0 : 8,
+        maxStorageBuffersInFragmentStage: compatibility ? 4: 8,
+        maxStorageTexturesPerShaderStage: 4,
+        maxStorageTexturesInVertexStage: compatibility ? 0 : 8,
+        maxStorageTexturesInFragmentStage: compatibility ? 4 : 8,
+        maxUniformBuffersPerShaderStage: 12,
+        maxUniformBufferBindingSize: compatibility ? 16384 : 65536,
+        maxStorageBufferBindingSize: 134217728,
+        minUniformBufferOffsetAlignment: 256,
+        minStorageBufferOffsetAlignment: 256,
+        maxVertexBuffers: 8,
+        maxBufferSize: 268435456,
+        maxVertexAttributes: 16,
+        maxVertexBufferArrayStride: 2048,
+        maxInterStageShaderVariables: compatibility ? 15 : 16,
+        maxColorAttachments: compatibility ? 4 : 8,
+        maxColorAttachmentBytesPerSample: 32,
+        maxComputeWorkgroupStorageSize: 16384,
+        maxComputeInvocationsPerWorkgroup: compatibility ? 128 : 256,
+        maxComputeWorkgroupSizeX: compatibility ? 128 : 256,
+        maxComputeWorkgroupSizeY: compatibility ? 128 : 256,
+        maxComputeWorkgroupSizeZ: 64,
+        maxComputeWorkgroupsPerDimension: 65535
+    };
+    limits[Symbol.toStringTag] = "GPUSupportedLimits";
+    return limits;
+}
+
 function __WebGPUReconstruct_GPU_requestAdapter(originalMethod, options) {
     __WebGPUReconstruct_DebugOutput("requestAdapter");
     
@@ -454,6 +498,12 @@ function __WebGPUReconstruct_GPU_requestAdapter(originalMethod, options) {
                 }
             }
             adapter.__defineGetter__("features", function() { return features;});
+            
+            if (__webGPUReconstruct.configuration.adapterDefaultLimits) {
+                let limits = __WebGPUReconstruct_getDefaultLimits(options.featureLevel === "compatibility");
+                adapter.__defineGetter__("limits", function() { return limits;});
+            }
+            
             return adapter;
         });
     });
@@ -664,6 +714,12 @@ $WRAP_COMMANDS
             this.configuration.captureMaxFrames = 0;
         } else {
             this.configuration.captureMaxFrames = Number(this.configuration.captureMaxFrames);
+        }
+
+        if (this.configuration.adapterDefaultLimits === undefined) {
+            this.configuration.adapterDefaultLimits = false;
+        } else {
+            this.configuration.adapterDefaultLimits = (this.configuration.adapterDefaultLimits === true) || (this.configuration.adapterDefaultLimits === "true");
         }
 
         if (this.configuration.externalTextureScale === undefined) {

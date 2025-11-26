@@ -1,12 +1,14 @@
 const saveOptions = () => {
     const captureFilename = document.getElementById('captureFilename').value;
     const captureMaxFrames = document.getElementById('captureMaxFrames').value;
+    const adapterDefaultLimits = document.getElementById('adapterDefaultLimits').checked;
     const externalTextureScale = document.getElementById('externalTextureScale').value;
 
     chrome.storage.local.set(
         {
             captureFilename: captureFilename,
             captureMaxFrames: captureMaxFrames,
+            adapterDefaultLimits: String(adapterDefaultLimits),
             externalTextureScale: externalTextureScale
         },
         () => {
@@ -25,11 +27,13 @@ const restoreOptions = () => {
         {
             captureFilename: "capture.wgpur",
             captureMaxFrames: "0",
+            adapterDefaultLimits: "false",
             externalTextureScale: "100"
         },
         (items) => {
             document.getElementById('captureFilename').value = items.captureFilename;
             document.getElementById('captureMaxFrames').value = items.captureMaxFrames;
+            document.getElementById('adapterDefaultLimits').checked = (items.adapterDefaultLimits === "true");
             document.getElementById('externalTextureScale').value = items.externalTextureScale;
         }
     );
