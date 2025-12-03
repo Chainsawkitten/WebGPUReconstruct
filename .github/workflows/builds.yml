@@ -1,7 +1,7 @@
 name: Build WebGPUReconstruct
 on:
-  workflow_call:
   push:
+  pull_request:
 
 jobs:
   build:
