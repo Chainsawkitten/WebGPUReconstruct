@@ -22,6 +22,10 @@
         #define GLFW_EXPOSE_NATIVE_X11
     #endif
     #include <GLFW/glfw3native.h>
+    #if __APPLE__
+        #include <QuartzCore/CAMetalLayer.h>
+        #include <AppKit/AppKit.h>
+    #endif
 #endif
 
 namespace WebGPUNativeReplay {
@@ -102,8 +106,15 @@ void Adapter::CreateSurface(const Window& window) {
     platformSurfaceSource.hinstance = GetModuleHandle(NULL);
     platformSurfaceSource.hwnd = glfwGetWin32Window(window.window);
 #elif __APPLE__
-#error "WebGPU surface support has not been implemented on Mac."
-    /// @todo Implement WGPUSurfaceSourceMetalLayer
+    NSWindow* nsWindow = glfwGetCocoaWindow(window.window);
+    NSView* contentView = [nsWindow contentView];
+    [contentView setWantsLayer:YES];
+    CAMetalLayer* metalLayer = [CAMetalLayer layer];
+    [contentView setLayer:metalLayer];
+    WGPUSurfaceSourceMetalLayer platformSurfaceSource = {};
+    platformSurfaceSource.chain.next = nullptr;
+    platformSurfaceSource.chain.sType = WGPUSType_SurfaceSourceMetalLayer;
+    platformSurfaceSource.layer = metalLayer;
 #elif __linux__
     WGPUSurfaceSourceXlibWindow platformSurfaceSource = {};
     platformSurfaceSource.chain.next = nullptr;
