@@ -251,6 +251,8 @@ function __WebGPUReconstruct_get_bytes_per_block(format) {
         return 1;
         
         // 16-bit formats
+        case "r16unorm":
+        case "r16snorm":
         case "r16uint":
         case "r16sint":
         case "r16float":
@@ -265,6 +267,8 @@ function __WebGPUReconstruct_get_bytes_per_block(format) {
         case "r32uint":
         case "r32sint":
         case "r32float":
+        case "rg16unorm":
+        case "rg16snorm":
         case "rg16uint":
         case "rg16sint":
         case "rg16float":
@@ -285,6 +289,8 @@ function __WebGPUReconstruct_get_bytes_per_block(format) {
         case "rg32uint":
         case "rg32sint":
         case "rg32float":
+        case "rgba16unorm":
+        case "rgba16snorm":
         case "rgba16uint":
         case "rgba16sint":
         case "rgba16float":
@@ -374,7 +380,7 @@ function __WebGPUReconstruct_get_bytes_per_block(format) {
 }
 
 // Features supported by WebGPUReconstruct. We will pretend the adapter doesn't support any other features.
-// TODO: dual-source-blending, texture-formats-tier1, texture-formats-tier2, texture-component-swizzle
+// TODO: dual-source-blending, texture-component-swizzle
 const __WebGPUReconstruct_supportedFeatures = new Set([
     "core-features-and-limits",
     "depth-clip-control",
@@ -394,6 +400,8 @@ const __WebGPUReconstruct_supportedFeatures = new Set([
     "clip-distances",
     "subgroups",
     "primitive-index",
+    "texture-formats-tier1",
+    "texture-formats-tier2"
 ]);
 
 function __WebGPUReconstruct_GPUAdapter_requestDevice(originalMethod, descriptor) {

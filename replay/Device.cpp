@@ -31,6 +31,8 @@ Device::Device(Adapter& adapter) {
         WGPUFeatureName_ClipDistances,
 #if WEBGPU_BACKEND_DAWN
         WGPUFeatureName_Subgroups,
+        WGPUFeatureName_TextureFormatsTier1,
+        WGPUFeatureName_TextureFormatsTier2,
         WGPUFeatureName_PrimitiveIndex,
 #endif
     };
@@ -66,6 +68,8 @@ Device::Device(Adapter& adapter) {
     std::vector<const char*> toggles;
     toggles.push_back("use_user_defined_labels_in_backend");
     toggles.push_back("use_dxc");
+    // Needed for experimental features like TextureFormatsTier1 and TextureFormatsTier2
+    toggles.push_back("allow_unsafe_apis");
 
     WGPUDawnTogglesDescriptor dawnToggles = {};
     dawnToggles.chain.sType = WGPUSType_DawnTogglesDescriptor;
