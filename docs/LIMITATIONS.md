@@ -12,6 +12,8 @@ The following optional WebGPU features are not supported:
 - `texture-component-swizzle`
 
 The following optional WebGPU features are not supported during WGPU playback:
+- `primitive-index`
+- `subgroups`
 - `texture-formats-tier1`
 - `texture-formats-tier2`
 
