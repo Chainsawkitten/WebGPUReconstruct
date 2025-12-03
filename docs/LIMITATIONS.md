@@ -9,9 +9,11 @@ Since workers run in a separate context, WebGPUReconstruct is not able to captur
 ## Unsupported features
 The following optional WebGPU features are not supported:
 - `dual-source-blending`
+- `texture-component-swizzle`
+
+The following optional WebGPU features are not supported during WGPU playback:
 - `texture-formats-tier1`
 - `texture-formats-tier2`
-- `texture-component-swizzle`
 
 During capture, `GPUAdapter` will behave as if these features are not supported, even if the device supports them.
 

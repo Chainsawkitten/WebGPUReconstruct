@@ -54,6 +54,10 @@ GPUTextureFormat = EnumType("GPUTextureFormat", [
     ["r8snorm", "WGPUTextureFormat_R8Snorm"],
     ["r8uint", "WGPUTextureFormat_R8Uint"],
     ["r8sint", "WGPUTextureFormat_R8Sint"],
+#if  WEBGPU_BACKEND_DAWN
+    ["r16unorm", "WGPUTextureFormat_R16Unorm"],
+    ["r16snorm", "WGPUTextureFormat_R16Snorm"],
+#endif
     ["r16uint", "WGPUTextureFormat_R16Uint"],
     ["r16sint", "WGPUTextureFormat_R16Sint"],
     ["r16float", "WGPUTextureFormat_R16Float"],
@@ -64,6 +68,10 @@ GPUTextureFormat = EnumType("GPUTextureFormat", [
     ["r32uint", "WGPUTextureFormat_R32Uint"],
     ["r32sint", "WGPUTextureFormat_R32Sint"],
     ["r32float", "WGPUTextureFormat_R32Float"],
+#if  WEBGPU_BACKEND_DAWN
+    ["rg16unorm", "WGPUTextureFormat_RG16Unorm"],
+    ["rg16snorm", "WGPUTextureFormat_RG16Snorm"],
+#endif
     ["rg16uint", "WGPUTextureFormat_RG16Uint"],
     ["rg16sint", "WGPUTextureFormat_RG16Sint"],
     ["rg16float", "WGPUTextureFormat_RG16Float"],
@@ -81,6 +89,10 @@ GPUTextureFormat = EnumType("GPUTextureFormat", [
     ["rg32uint", "WGPUTextureFormat_RG32Uint"],
     ["rg32sint", "WGPUTextureFormat_RG32Sint"],
     ["rg32float", "WGPUTextureFormat_RG32Float"],
+#if  WEBGPU_BACKEND_DAWN
+    ["rgba16unorm", "WGPUTextureFormat_RGBA16Unorm"],
+    ["rgba16snorm", "WGPUTextureFormat_RGBA16Snorm"],
+#endif
     ["rgba16uint", "WGPUTextureFormat_RGBA16Uint"],
     ["rgba16sint", "WGPUTextureFormat_RGBA16Sint"],
     ["rgba16float", "WGPUTextureFormat_RGBA16Float"],

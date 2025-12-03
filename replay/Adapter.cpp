@@ -132,6 +132,8 @@ void Adapter::RequestAdapter(WGPUBackendType backendType) {
     std::vector<const char*> toggles;
     toggles.push_back("use_user_defined_labels_in_backend");
     toggles.push_back("use_dxc");
+    // Needed for experimental features like TextureFormatsTier1 and TextureFormatsTier2
+    toggles.push_back("allow_unsafe_apis");
 
     WGPUDawnTogglesDescriptor dawnToggles = {};
     dawnToggles.chain.sType = WGPUSType_DawnTogglesDescriptor;
