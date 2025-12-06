@@ -31,6 +31,10 @@ jobs:
           - platform: android
             backend: dawn
             os: windows-latest
+
+          - platform: mac
+            backend: wgpu
+            os: macos-latest
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
