@@ -33,6 +33,10 @@ jobs:
             os: windows-latest
 
           - platform: mac
+            backend: dawn
+            os: macos-latest
+
+          - platform: mac
             backend: wgpu
             os: macos-latest
     runs-on: ${{ matrix.os }}
