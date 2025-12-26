@@ -31,9 +31,9 @@ runs:
           ${{ github.workspace }}/build/replay/Release/WebGPUNativeReplay*
           ${{ github.workspace }}/build/replay/Release/*.dll
 
-# Upload Linux build
+# Upload Linux & Mac builds
     - name: Upload replayer
-      if: ${{ inputs.platform == 'linux' }}
+      if: ${{ inputs.platform == 'linux' || inputs.platform == 'mac' }}
       uses: actions/upload-artifact@v4
       with:
         name: replay-${{ inputs.platform }}-${{ inputs.backend }}
