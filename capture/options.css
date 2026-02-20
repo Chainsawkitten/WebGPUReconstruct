@@ -1,0 +1,60 @@
+body {
+    margin: 0;
+    font-size: 100%;
+    font-family: sans-serif;
+}
+
+#header {
+    width: 100%;
+    background-color: #e4f0f8;
+}
+
+#header-contents {
+    margin: auto;
+    max-width: 1000px;
+    padding: 8px;
+}
+
+#content {
+    margin: auto;
+    max-width: 1000px;
+    padding: 5px;
+}
+
+.category {
+    margin: 5px;
+}
+
+.options {
+    padding: 5px;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    grid-gap: 5px;
+    align-items: center;
+    padding: 8px;
+}
+
+.save {
+    margin-top: 20px;
+}
+
+[hbox] {
+    display: flex;
+    flex-direction: row;
+}
+
+[vbox] {
+    display: flex;
+    flex-direction: column;
+}
+
+[odd] {
+    background-color: #f8fafb;
+}
+
+[even] {
+    background-color: #fcfdfe;
+}

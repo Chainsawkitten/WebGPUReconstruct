@@ -2,45 +2,59 @@
 <html>
     <head>
         <title>WebGPUReconstruct Options</title>
+        <link rel="stylesheet" type="text/css" href="options.css">
     </head>
     <body>
-        <h1>WebGPUReconstruct Options</h1>
-
-        <div>
-            <h2>Capture</h2>
-
-            <p>
-                <span>Filename</span>
-                <input type="text" id="captureFilename" />
-            </p>
-
-            <p>
-                <span>Max frames</span>
-                <input type="number" id="captureMaxFrames" min="0" />
-            </p>
+        <div id="header">
+            <div id="header-contents" hbox>
+                <img src="images/webgpu.png" alt="WebGPU Logo" />
+                <h1>WebGPUReconstruct Options</h1>
+            </div>
         </div>
 
-        <div>
-            <h2>Adapter</h2>
+        <div id="content" vbox>
+            <div class="category" vbox>
+                <h2>Capture</h2>
 
-            <p>
-                <span>Force default limits</span>
-                <input type="checkbox" id="adapterDefaultLimits" value="true" />
-            </p>
-        </div>
+                <div class="options">
+                    <div class="row" odd>
+                        <span>Filename</span>
+                        <input type="text" id="captureFilename" />
+                    </div>
 
-        <div>
-            <h2>External textures</h2>
+                    <div class="row" even>
+                        <span>Max frames</span>
+                        <input type="number" id="captureMaxFrames" min="0" />
+                    </div>
+                </div>
+            </div>
 
-            <p>
-                <span>Scale (%)</span>
-                <input type="number" id="externalTextureScale" min="1" max="100" />
-            </p>
-        </div>
+            <div class="category" vbox>
+                <h2>Adapter</h2>
 
-        <div>
-            <button id="save">Save</button>
-            <div id="status"></div>
+                <div class="options">
+                    <div class="row" odd>
+                        <span>Force default limits</span>
+                        <input type="checkbox" id="adapterDefaultLimits" value="true" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="category" vbox>
+                <h2>External textures</h2>
+
+                <div class="options">
+                    <div class="row" odd>
+                        <span>Scale (%)</span>
+                        <input type="number" id="externalTextureScale" min="1" max="100" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="save" vbox>
+                <button id="save">Save</button>
+                <div id="status"></div>
+            </div>
         </div>
 
         <script src="scripts/options.js"></script>
