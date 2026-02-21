@@ -29,7 +29,7 @@ To build with the wgpu backend (`--wgpu`), you need to setup wgpu's dependencies
 - Download and install the wgpu-native prerequisites described in the [docs](https://github.com/gfx-rs/wgpu-native/wiki/Getting-Started#prerequisites). You don't need the dependencies for the native examples.
 
 ### Android
-Install [Android Studio](https://developer.android.com/studio) and use it to download Android SDK and NDK 26.3.11579264.
+Install [Android Studio](https://developer.android.com/studio) and use it to download Android SDK and NDK 27.1.12297006.
 
 Enable Android builds and set the NDK path when configuring the build.
 ```
