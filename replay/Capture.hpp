@@ -108,6 +108,19 @@ $STRUCT_FUNCTION_DECLARATIONS
     }
     
     template <class T>
+    void ReleaseIdType(std::unordered_map<uint32_t, T>&m, uint32_t id, void (*releaseFunction)(T)) {
+        if (id == 0) {
+            return;
+        }
+        
+        auto it = m.find(id);
+        if (it != m.end()) {
+            releaseFunction(it->second);
+            m.erase(it);
+        }
+    }
+    
+    template <class T>
     T* LoadStructPointer(void (Capture::*loadMethod)(T*)) {
         if (reader.ReadUint8()) {
             T* value = new T;

@@ -1,9 +1,6 @@
-# Start at 100 to leave some room for hardcoded commands.
-commandId = 100
 captureCommandsString = ""
 wrapCommandsString = ""
 resetCommandsString = ""
-runCommandsString = ""
 
 from code_generation.struct_types import *
 
@@ -49,6 +46,7 @@ def add_simple_command(classType, methodName, nativeCommand, returnType, argumen
     if isinstance(returnType, IdType):
         capture += '__WebGPUReconstruct_AddId(result);\n'
         capture += '__WebGPUReconstruct_file.writeUint32(result.__id);\n'
+        capture += returnType.finalization('result')
         
         replay += 'const uint32_t resultId = reader.ReadUint32();\n'
     else:
@@ -182,6 +180,18 @@ def add_override_command(classType, methodName, argumentCount, overrides):
     wrapCommandsString += '        ' + classType.webName + ".prototype." + methodName + " = this." + classType.webName + "_" + methodName + '_original;\n'
     wrapCommandsString += '        ' + classType.webName + ".prototype." + methodName + " = this.wrapMethodPost(" + classType.webName + ".prototype." + methodName + ", __WebGPUReconstruct_" + classType.webName + "_" + methodName + '_override, "' + classType.webName + "_" + methodName + '");\n'
 
+# Add a command to destroy an ID resource
+def add_destroy_command(classType):
+    assert(isinstance(classType, IdType))
+    
+    capture = '__WebGPUReconstruct_file.writeUint32($COMMAND_ID);\n'
+    capture += '__WebGPUReconstruct_file.writeUint32(this.__id);\n'
+    
+    replay = 'DebugOutput("' + classType.webName + ' destroyed\\n");\n'
+    replay += 'ReleaseIdType(map' + classType.webName + ', reader.ReadUint32(), ' + classType.releaseFunction + ');\n'
+    
+    add_custom_command(classType, "destroy", [], capture, replay)
+
 ### COMMANDS
 add_simple_command(GPUDevice, "createBuffer", "wgpuDeviceCreateBuffer", GPUBuffer, [GPUBufferDescriptor])
 add_simple_command(GPUDevice, "createTexture", "wgpuDeviceCreateTexture", GPUTexture, [GPUTextureDescriptor])
@@ -195,7 +205,10 @@ add_simple_command(GPUDevice, "createCommandEncoder", "wgpuDeviceCreateCommandEn
 add_simple_command(GPUDevice, "createRenderBundleEncoder", "wgpuDeviceCreateRenderBundleEncoder", GPURenderBundleEncoder, [GPURenderBundleEncoderDescriptor])
 add_simple_command(GPUDevice, "createQuerySet", "wgpuDeviceCreateQuerySet", GPUQuerySet, [GPUQuerySetDescriptor])
 
+add_destroy_command(GPUBuffer)
+
 add_simple_command(GPUTexture, "createView", "wgpuTextureCreateView", GPUTextureView, [GPUTextureViewDescriptor])
+add_destroy_command(GPUTexture)
 
 add_simple_command(GPUComputePipeline, "getBindGroupLayout", "wgpuComputePipelineGetBindGroupLayout", GPUBindGroupLayout, [Uint32])
 
@@ -210,7 +223,7 @@ add_simple_command(GPUCommandEncoder, "copyTextureToBuffer", "wgpuCommandEncoder
 add_simple_command(GPUCommandEncoder, "copyTextureToTexture", "wgpuCommandEncoderCopyTextureToTexture", undefined, [GPUTexelCopyTextureInfo, GPUTexelCopyTextureInfo, GPUExtent3D])
 add_simple_command(GPUCommandEncoder, "clearBuffer", "wgpuCommandEncoderClearBuffer", undefined, [GPUBuffer, Optional(Uint64, 0), Optional(Uint64, "arg0.size - arg1")])
 add_simple_command(GPUCommandEncoder, "resolveQuerySet", "wgpuCommandEncoderResolveQuerySet", undefined, [GPUQuerySet, Uint32, Uint32, GPUBuffer, Uint64])
-add_simple_command(GPUCommandEncoder, "finish", "wgpuCommandEncoderFinish", GPUCommandBuffer, [GPUCommandBufferDescriptor], "wgpuCommandEncoderRelease(subject);\n")
+add_simple_command(GPUCommandEncoder, "finish", "wgpuCommandEncoderFinish", GPUCommandBuffer, [GPUCommandBufferDescriptor])
 add_simple_command(GPUCommandEncoder, "pushDebugGroup", "wgpuCommandEncoderPushDebugGroup", undefined, [String])
 add_simple_command(GPUCommandEncoder, "popDebugGroup", "wgpuCommandEncoderPopDebugGroup", undefined, [])
 add_simple_command(GPUCommandEncoder, "insertDebugMarker", "wgpuCommandEncoderInsertDebugMarker", undefined, [String])
@@ -218,7 +231,7 @@ add_simple_command(GPUCommandEncoder, "insertDebugMarker", "wgpuCommandEncoderIn
 add_simple_command(GPUComputePassEncoder, "setPipeline", "wgpuComputePassEncoderSetPipeline", undefined, [GPUComputePipeline])
 add_simple_command(GPUComputePassEncoder, "dispatchWorkgroups", "wgpuComputePassEncoderDispatchWorkgroups", undefined, [Uint32, Optional(Uint32, 1), Optional(Uint32, 1)])
 add_simple_command(GPUComputePassEncoder, "dispatchWorkgroupsIndirect", "wgpuComputePassEncoderDispatchWorkgroupsIndirect", undefined, [GPUBuffer, Uint64])
-add_simple_command(GPUComputePassEncoder, "end", "wgpuComputePassEncoderEnd", undefined, [], "wgpuComputePassEncoderRelease(subject);\n")
+add_simple_command(GPUComputePassEncoder, "end", "wgpuComputePassEncoderEnd", undefined, [])
 add_simple_command(GPUComputePassEncoder, "pushDebugGroup", "wgpuComputePassEncoderPushDebugGroup", undefined, [String])
 add_simple_command(GPUComputePassEncoder, "popDebugGroup", "wgpuComputePassEncoderPopDebugGroup", undefined, [])
 add_simple_command(GPUComputePassEncoder, "insertDebugMarker", "wgpuComputePassEncoderInsertDebugMarker", undefined, [String])
@@ -231,7 +244,7 @@ add_simple_command(GPURenderPassEncoder, "setStencilReference", "wgpuRenderPassE
 add_simple_command(GPURenderPassEncoder, "beginOcclusionQuery", "wgpuRenderPassEncoderBeginOcclusionQuery", undefined, [Uint32])
 add_simple_command(GPURenderPassEncoder, "endOcclusionQuery", "wgpuRenderPassEncoderEndOcclusionQuery", undefined, [])
 add_simple_command(GPURenderPassEncoder, "executeBundles", "wgpuRenderPassEncoderExecuteBundles", undefined, [SequenceType(GPURenderBundle)])
-add_simple_command(GPURenderPassEncoder, "end", "wgpuRenderPassEncoderEnd", undefined, [], "wgpuRenderPassEncoderRelease(subject);\n")
+add_simple_command(GPURenderPassEncoder, "end", "wgpuRenderPassEncoderEnd", undefined, [])
 add_simple_command(GPURenderPassEncoder, "pushDebugGroup", "wgpuRenderPassEncoderPushDebugGroup", undefined, [String])
 add_simple_command(GPURenderPassEncoder, "popDebugGroup", "wgpuRenderPassEncoderPopDebugGroup", undefined, [])
 add_simple_command(GPURenderPassEncoder, "insertDebugMarker", "wgpuRenderPassEncoderInsertDebugMarker", undefined, [String])
@@ -244,7 +257,7 @@ add_simple_command(GPURenderPassEncoder, "drawIndexed", "wgpuRenderPassEncoderDr
 add_simple_command(GPURenderPassEncoder, "drawIndirect", "wgpuRenderPassEncoderDrawIndirect", undefined, [GPUBuffer, Uint64])
 add_simple_command(GPURenderPassEncoder, "drawIndexedIndirect", "wgpuRenderPassEncoderDrawIndexedIndirect", undefined, [GPUBuffer, Uint64])
 
-add_simple_command(GPURenderBundleEncoder, "finish", "wgpuRenderBundleEncoderFinish", GPURenderBundle, [GPURenderBundleDescriptor], "wgpuRenderBundleEncoderRelease(subject);\n")
+add_simple_command(GPURenderBundleEncoder, "finish", "wgpuRenderBundleEncoderFinish", GPURenderBundle, [GPURenderBundleDescriptor])
 add_simple_command(GPURenderBundleEncoder, "pushDebugGroup", "wgpuRenderBundleEncoderPushDebugGroup", undefined, [String])
 add_simple_command(GPURenderBundleEncoder, "popDebugGroup", "wgpuRenderBundleEncoderPopDebugGroup", undefined, [])
 add_simple_command(GPURenderBundleEncoder, "insertDebugMarker", "wgpuRenderBundleEncoderInsertDebugMarker", undefined, [String])
@@ -256,6 +269,8 @@ add_simple_command(GPURenderBundleEncoder, "draw", "wgpuRenderBundleEncoderDraw"
 add_simple_command(GPURenderBundleEncoder, "drawIndexed", "wgpuRenderBundleEncoderDrawIndexed", undefined, [Uint32, Optional(Uint32, 1), Uint32, Int32, Uint32])
 add_simple_command(GPURenderBundleEncoder, "drawIndirect", "wgpuRenderBundleEncoderDrawIndirect", undefined, [GPUBuffer, Uint64])
 add_simple_command(GPURenderBundleEncoder, "drawIndexedIndirect", "wgpuRenderBundleEncoderDrawIndexedIndirect", undefined, [GPUBuffer, Uint64])
+
+add_destroy_command(GPUQuerySet)
 
 add_simple_command(GPUQueue, "submit", "wgpuQueueSubmit", undefined, [SequenceType(GPUCommandBuffer)])
 
@@ -851,3 +866,4 @@ enumConversionsString = format(enumConversionsString)
 structSaveFunctionsString = format(structSaveFunctionsString)
 structLoadFunctionsString = format(structLoadFunctionsString)
 structFunctionDeclarationsString = format(structFunctionDeclarationsString, 1)
+finalizationRegistryString = format(finalizationRegistryString, 2)

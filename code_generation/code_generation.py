@@ -5,7 +5,7 @@ from pathlib import Path
 
 version = (1, 0)
 # Increment the file version whenever a change is introduced.
-fileVersion = 17
+fileVersion = 18
 
 versionString = str(version[0]) + "." + str(version[1])
 versionInt = version[0] * 10000 + version[1]
@@ -119,7 +119,7 @@ def write_content_script(path, configuration):
     replace_string_in_file(path, "$VERSION_MAJOR", str(version[0]))
     replace_string_in_file(path, "$VERSION_MINOR", str(version[1]))
     replace_string_in_file(path, "$CAPTURE_COMMANDS", captureCommandsString)
-    replace_string_in_file(path, "$WRAP_COMMANDS", wrapCommandsString)
+    replace_string_in_file(path, "$WRAP_COMMANDS", wrapCommandsString + '\n' + finalizationRegistryString)
     replace_string_in_file(path, "$RESET_COMMANDS", resetCommandsString)
     replace_string_in_file(path, "$ENUM_SAVE_FUNCTIONS", enumSaveFunctionsString)
     replace_string_in_file(path, "$STRUCT_SAVE_FUNCTIONS", structSaveFunctionsString)
