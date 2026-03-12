@@ -4,6 +4,7 @@ class __WebGPUReconstruct_Uint8Writer {
     grow() {
         this.currentSize = 0;
         this.arrays.push(new Uint8Array(__WebGPUReconstruct_blockSize));
+        this.utf8Encoder = new TextEncoder();
     }
     
     constructor() {
@@ -95,10 +96,10 @@ class __WebGPUReconstruct_Uint8Writer {
     }
     
     writeString(value) {
-        this.writeUint64(value.length);
-        for (let i = 0; i < value.length; i += 1) {
-            this.writeUint8(value.charCodeAt(i));
-        }
+        const utf8 = this.utf8Encoder.encode(value);
+        this.writeUint64(utf8.length);
+        const reservedPosition = this.reserve(utf8.length);
+        this.writeReserved(reservedPosition, utf8);
     }
     
     reserve(size) {

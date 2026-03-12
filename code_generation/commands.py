@@ -365,10 +365,7 @@ __WebGPUReconstruct_file.writeUint32($COMMAND_ID);
 __WebGPUReconstruct_AddId(result);
 __WebGPUReconstruct_file.writeUint32(result.__id);
 __WebGPUReconstruct_DebugOutput(descriptor.code);
-__WebGPUReconstruct_file.writeUint64(descriptor.code.length);
-for (let i = 0; i < descriptor.code.length; i += 1) {
-    __WebGPUReconstruct_file.writeUint8(descriptor.code.charCodeAt(i));
-}
+__WebGPUReconstruct_file.writeString(descriptor.code);
 // TODO Hints
 if (descriptor.compilationHints != undefined && descriptor.compilationHints.length > 0) {
     console.warn("WebGPUReconstruct currently doesn't support descriptor.compilationHints. This will be treated as undefined during replay.");
