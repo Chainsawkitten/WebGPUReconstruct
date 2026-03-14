@@ -14,11 +14,15 @@ inline void wgpuDeviceTick(WGPUDevice device) {
     wgpuDevicePoll(device, false, nullptr);
 }
 
-// Dummy struct for external textures until they are added to wgpu.
+// Dummy structs until they are added to wgpu.
 typedef struct {
     WGPUChainedStruct chain;
 } WGPUExternalTextureBindingLayout;
 #define WGPUSType_ExternalTextureBindingLayout WGPUSType_Force32
+typedef struct {
+    WGPUChainedStruct chain;
+} WGPUTextureBindingViewDimensionDescriptor;
+#define WGPUSType_TextureBindingViewDimensionDescriptor WGPUSType_Force32
 #define WGPUTextureFormat_R16Unorm WGPUTextureFormat_Force32
 #define WGPUTextureFormat_R16Snorm WGPUTextureFormat_Force32
 #define WGPUTextureFormat_RG16Unorm WGPUTextureFormat_Force32

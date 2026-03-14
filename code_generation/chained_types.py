@@ -1,4 +1,5 @@
 from code_generation.custom_types import *
+from code_generation.enum_types import *
 
 # Type which is a dictionary entry in JavaScript but a chained struct in C.
 class ChainedType:
@@ -65,6 +66,16 @@ GPUExternalTextureBindingLayout = ChainedType("ExternalTextureBindingLayout", ""
 """
 #if WEBGPU_BACKEND_WGPU
 ErrorOutput("External texture in bind group layout not supported in wgpu backend.\\n");
+#endif
+"""
+)
+
+GPUTextureBindingViewDimension = ChainedType("TextureBindingViewDimensionDescriptor", GPUTextureViewDimension.save("$name"),
+"""
+#if WEBGPU_BACKEND_WGPU
+ErrorOutput("GPUTextureDescriptor.textureBindingViewDimension not supported in wgpu backend.\\n");
+#else
+""" + GPUTextureViewDimension.load("$name->textureBindingViewDimension") + """
 #endif
 """
 )

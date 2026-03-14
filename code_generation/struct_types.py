@@ -1,5 +1,4 @@
 from code_generation.non_captured_types import *
-from code_generation.enum_types import *
 from code_generation.chained_types import *
 from code_generation.unsupported_type import *
 
@@ -381,7 +380,7 @@ GPUTextureDescriptor = StructType("GPUTextureDescriptor", [
     [GPUTextureFormat, "format"],
     [Uint32, "usage"],
     [SequenceType(GPUTextureFormat), "viewFormat"],
-    [Unsupported, "textureBindingViewDimension"]
+    [GPUTextureBindingViewDimension, "textureBindingViewDimension"]
 ])
 
 GPUBindGroupDescriptor = StructType("GPUBindGroupDescriptor", [
