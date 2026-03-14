@@ -380,7 +380,8 @@ GPUTextureDescriptor = StructType("GPUTextureDescriptor", [
     [GPUTextureDimension, "dimension", '"2d"'],
     [GPUTextureFormat, "format"],
     [Uint32, "usage"],
-    [SequenceType(GPUTextureFormat), "viewFormat"]
+    [SequenceType(GPUTextureFormat), "viewFormat"],
+    [Unsupported, "textureBindingViewDimension"]
 ])
 
 GPUBindGroupDescriptor = StructType("GPUBindGroupDescriptor", [

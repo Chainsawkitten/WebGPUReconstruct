@@ -20,6 +20,7 @@ The following optional WebGPU features are not supported during WGPU playback:
 - `texture-formats-tier2`
 
 The following properties are not supported:
+- `GPUTextureDescriptor.textureBindingViewDimension`
 - `GPUShaderModuleDescriptor.compilationHints`
 
 These properties will be treated as if they were set to `undefined`. Setting an unsupported property will give you a warning during capture (but not during replay).
