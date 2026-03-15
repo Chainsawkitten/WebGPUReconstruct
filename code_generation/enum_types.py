@@ -213,22 +213,31 @@ GPUVertexStepMode = EnumType("GPUVertexStepMode", [
 ])
 
 GPUVertexFormat = EnumType("GPUVertexFormat", [
+    ["uint8", "WGPUVertexFormat_Uint8"],
     ["uint8x2", "WGPUVertexFormat_Uint8x2"],
     ["uint8x4", "WGPUVertexFormat_Uint8x4"],
+    ["sint8", "WGPUVertexFormat_Sint8"],
     ["sint8x2", "WGPUVertexFormat_Sint8x2"],
     ["sint8x4", "WGPUVertexFormat_Sint8x4"],
+    ["unorm8", "WGPUVertexFormat_Unorm8"],
     ["unorm8x2", "WGPUVertexFormat_Unorm8x2"],
     ["unorm8x4", "WGPUVertexFormat_Unorm8x4"],
+    ["snorm8", "WGPUVertexFormat_Snorm8"],
     ["snorm8x2", "WGPUVertexFormat_Snorm8x2"],
     ["snorm8x4", "WGPUVertexFormat_Snorm8x4"],
+    ["uint16", "WGPUVertexFormat_Uint16"],
     ["uint16x2", "WGPUVertexFormat_Uint16x2"],
     ["uint16x4", "WGPUVertexFormat_Uint16x4"],
+    ["sint16", "WGPUVertexFormat_Sint16"],
     ["sint16x2", "WGPUVertexFormat_Sint16x2"],
     ["sint16x4", "WGPUVertexFormat_Sint16x4"],
+    ["unorm16", "WGPUVertexFormat_Unorm16"],
     ["unorm16x2", "WGPUVertexFormat_Unorm16x2"],
     ["unorm16x4", "WGPUVertexFormat_Unorm16x4"],
+    ["snorm16", "WGPUVertexFormat_Snorm16"],
     ["snorm16x2", "WGPUVertexFormat_Snorm16x2"],
     ["snorm16x4", "WGPUVertexFormat_Snorm16x4"],
+    ["float16", "WGPUVertexFormat_Float16"],
     ["float16x2", "WGPUVertexFormat_Float16x2"],
     ["float16x4", "WGPUVertexFormat_Float16x4"],
     ["float32", "WGPUVertexFormat_Float32"],
@@ -242,8 +251,9 @@ GPUVertexFormat = EnumType("GPUVertexFormat", [
     ["sint32", "WGPUVertexFormat_Sint32"],
     ["sint32x2", "WGPUVertexFormat_Sint32x2"],
     ["sint32x3", "WGPUVertexFormat_Sint32x3"],
-    ["sint32x4", "WGPUVertexFormat_Sint32x4"]
-    #["unorm10-10-10-2", ] <- TODO Not in the native headers?!
+    ["sint32x4", "WGPUVertexFormat_Sint32x4"],
+    ["unorm10-10-10-2", "WGPUVertexFormat_Unorm10_10_10_2"],
+    ["unorm8x4-bgra", "WGPUVertexFormat_Unorm8x4BGRA"],
 ])
 
 GPUPrimitiveTopology = EnumType("GPUPrimitiveTopology", [
