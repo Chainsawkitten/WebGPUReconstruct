@@ -3,7 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 
-version = (1, 0)
+version = (2, 0)
 # Increment the file version whenever a change is introduced.
 fileVersion = 20
 
