@@ -11,6 +11,7 @@ versionString = str(version[0]) + "." + str(version[1])
 versionInt = version[0] * 10000 + version[1]
 
 from code_generation.commands import *
+from code_generation.options import *
 
 def replace_string_in_file(filename, oldString, newString):
     file = open(filename, "r")
@@ -70,8 +71,10 @@ def write_browser_extension(configuration, browser):
     }
 """)
     
+    options = get_options()
+    
     contentPath = "build/capture/" + browser + "/scripts/mainContent.js"
-    write_content_script(contentPath, configuration)
+    write_content_script(contentPath, configuration, options)
     add_suffix_to_file(contentPath, """
 let __webGPUReconstruct = new __WebGPUReconstruct();
 
@@ -90,13 +93,24 @@ __webGPUReconstruct.optionsPromise = new Promise((resolve) => {
 });
 """)
     
+    optionsJsPath = "build/capture/" + browser + "/scripts/options.js"
+    replace_string_in_file(optionsJsPath, "$SAVE_OPTIONS", options.get_save_options())
+    replace_string_in_file(optionsJsPath, "$RESTORE_OPTIONS", options.get_restore_options())
+    
+    replace_string_in_file("build/capture/" + browser + "/options.html", "$OPTIONS", options.get_html())
+    
+    add_suffix_to_file("build/capture/" + browser + "/scripts/isolatedContent.js", options.get_load_options())
+    
     shutil.make_archive("build/capture/" + browser, 'zip', "build/capture/" + browser)
 
 def write_module(configuration):
     Path("build/capture/module").mkdir(parents=True, exist_ok=True)
     contentPath = "build/capture/module/WebGPUReconstruct.js"
     shutil.copyfile("capture/scripts/mainContent.js", contentPath)
-    write_content_script(contentPath, configuration)
+    
+    options = get_options()
+    
+    write_content_script(contentPath, configuration, options)
     add_suffix_to_file(contentPath, """
 let __webGPUReconstruct;
 
@@ -113,7 +127,7 @@ function finish() {
 export default { start, finish };
 """)
 
-def write_content_script(path, configuration):
+def write_content_script(path, configuration, options):
     add_prefix_to_file(path, "const __WebGPUReconstruct_DEBUG = " + ("true" if configuration["debug"] else "false") + ";\n")
     replace_string_in_file(path, "$FILE_VERSION", str(fileVersion))
     replace_string_in_file(path, "$VERSION_MAJOR", str(version[0]))
@@ -123,6 +137,7 @@ def write_content_script(path, configuration):
     replace_string_in_file(path, "$RESET_COMMANDS", resetCommandsString)
     replace_string_in_file(path, "$ENUM_SAVE_FUNCTIONS", enumSaveFunctionsString)
     replace_string_in_file(path, "$STRUCT_SAVE_FUNCTIONS", structSaveFunctionsString)
+    replace_string_in_file(path, "$CONFIGURE_OPTIONS", options.get_configure())
     
 
 def run_query(rootDir, workingDirectory, arguments):

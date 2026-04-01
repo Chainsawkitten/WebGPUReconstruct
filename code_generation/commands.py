@@ -3,6 +3,7 @@ wrapCommandsString = ""
 resetCommandsString = ""
 
 from code_generation.struct_types import *
+from code_generation.formatting import *
 
 # An advanced command that requires custom code. Eg. when there are differences between web and native (eg. swapchain stuff).
 def add_custom_command(classType, methodName, arguments, captureCode, replayCode):
@@ -840,21 +841,7 @@ if (reader.ReadUint8()) {
 }
 """)
 
-# Basic line indentation based on {}.
-def format(code, baseIndentation = 0):
-    formatted = ''
-    indentation = baseIndentation
-    
-    split = code.splitlines(True)
-    for line in split:
-        indentation -= line.count('}') - line.count('{}')
-        for i in range(indentation):
-            formatted += '    '
-        formatted += line.strip() + '\n'
-        indentation += line.count('{') - line.count('{}')
-    
-    return formatted
-
+# Formatting
 captureCommandsString = format(captureCommandsString)
 runCommandsString = format(runCommandsString, 1)
 mapString = format(mapString, 1)

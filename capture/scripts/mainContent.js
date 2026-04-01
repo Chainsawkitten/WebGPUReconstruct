@@ -714,28 +714,8 @@ $WRAP_COMMANDS
         if (this.configuration == undefined) {
             this.configuration = {};
         }
-
-        if (this.configuration.captureFilename === undefined) {
-            this.configuration.captureFilename = "capture.wgpur";
-        }
-
-        if (this.configuration.captureMaxFrames === undefined) {
-            this.configuration.captureMaxFrames = 0;
-        } else {
-            this.configuration.captureMaxFrames = Number(this.configuration.captureMaxFrames);
-        }
-
-        if (this.configuration.adapterDefaultLimits === undefined) {
-            this.configuration.adapterDefaultLimits = false;
-        } else {
-            this.configuration.adapterDefaultLimits = (this.configuration.adapterDefaultLimits === true) || (this.configuration.adapterDefaultLimits === "true");
-        }
-
-        if (this.configuration.externalTextureScale === undefined) {
-            this.configuration.externalTextureScale = 100;
-        } else {
-            this.configuration.externalTextureScale = Number(this.configuration.externalTextureScale);
-        }
+        
+$CONFIGURE_OPTIONS
     }
 
     finishCapture() {
