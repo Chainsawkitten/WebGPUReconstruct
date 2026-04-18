@@ -201,6 +201,28 @@ class Options:
         
         return format(js.replace("$STORAGE_GET", storage_get).replace("$ELEMENT_SET", element_set), 1)
 
+    def get_reset_options(self):
+        js = """
+            if (confirm("Reset all options to default?")) {
+                const items = {
+                    $STORAGE_GET
+                };
+                $ELEMENT_SET
+                
+                saveOptions();
+            }
+            """
+        
+        storage_get = ""
+        for category in self.categories:
+            storage_get += category.get_storage_get()
+        
+        element_set = ""
+        for category in self.categories:
+            element_set += category.get_element_set()
+        
+        return format(js.replace("$STORAGE_GET", storage_get).replace("$ELEMENT_SET", element_set), 1)
+
     def get_load_options(self):
         js = """
             chrome.storage.local.get(

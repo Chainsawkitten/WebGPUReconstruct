@@ -96,6 +96,7 @@ __webGPUReconstruct.optionsPromise = new Promise((resolve) => {
     optionsJsPath = "build/capture/" + browser + "/scripts/options.js"
     replace_string_in_file(optionsJsPath, "$SAVE_OPTIONS", options.get_save_options())
     replace_string_in_file(optionsJsPath, "$RESTORE_OPTIONS", options.get_restore_options())
+    replace_string_in_file(optionsJsPath, "$RESET_OPTIONS", options.get_reset_options())
     
     replace_string_in_file("build/capture/" + browser + "/options.html", "$OPTIONS", options.get_html())
     

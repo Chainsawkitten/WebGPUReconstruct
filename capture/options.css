@@ -41,6 +41,10 @@ body {
     margin-top: 20px;
 }
 
+.save button {
+    margin: 3px;
+}
+
 .tooltip {
     position: relative;
     display: inline-block;
