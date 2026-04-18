@@ -41,6 +41,54 @@ body {
     margin-top: 20px;
 }
 
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.info {
+    height: 1em;
+    opacity: 0.35;
+}
+
+.tooltip:hover .info {
+    opacity: 0.5;
+}
+
+.tooltiptext {
+    padding: 10px;
+    display: none;
+    position: absolute;
+    z-index: 1;
+    width: max-content;
+    max-width: 500px;
+    box-shadow: 1px 1px 15px #aaa;
+    border-radius: 5px;
+    background-color: #fff;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-20%);
+}
+
+.tooltip:hover .tooltiptext {
+    display: block;
+}
+
+.tooltiptext:after {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 10px;
+    height: 10px;
+    transform-origin: 50% 50%;
+    transform: rotate(45deg) translateX(-50%);
+    background-color: #fff;
+    left: 20%;
+    bottom: -8px;
+    z-index: 2;
+}
+
 [hbox] {
     display: flex;
     flex-direction: row;

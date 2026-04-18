@@ -3,7 +3,7 @@ from code_generation.formatting import *
 class Options:
     class Category:
         class Option:
-            def __init__(self, id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure):
+            def __init__(self, id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure, hint):
                 self.id = id
                 self.name = name
                 self.inputHtml = inputHtml
@@ -12,11 +12,12 @@ class Options:
                 self.elementSet = elementSet
                 self.elementGet = elementGet
                 self.configure = configure
+                self.hint = hint
             
             def get_html(self, odd):
                 return f"""
                     <div class="row" {"odd" if odd else "even"}>
-                        <span>{self.name}</span>
+                        <span>{self.name} <div class="tooltip"><img class="info" src="images/info.svg" /><span class="tooltiptext">{self.hint}</span></div></span>
                         {self.inputHtml}
                     </div>"""
             
@@ -39,10 +40,10 @@ class Options:
             self.options = []
             self.name = name
         
-        def add_option(self, id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure):
-            self.options.append(Options.Category.Option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure))
+        def add_option(self, id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure, hint):
+            self.options.append(Options.Category.Option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure, hint))
         
-        def add_string_option(self, id, name, defaultValue):
+        def add_string_option(self, id, name, hint, defaultValue):
             inputHtml = f'<input type="text" id="{id}" />'
             storageSet = f'{id}: {id}'
             storageGet = f'{id}: "{defaultValue}"'
@@ -53,9 +54,9 @@ class Options:
                     this.configuration.{id} = "{defaultValue}";
                 }}
                 '''
-            self.add_option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure)
+            self.add_option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure, hint)
         
-        def add_bool_option(self, id, name, defaultValue):
+        def add_bool_option(self, id, name, hint, defaultValue):
             defaultString = "true" if defaultValue else "false"
             inputHtml = f'<input type="checkbox" id="{id}" value="true" />'
             storageSet = f'{id}: String({id})'
@@ -69,9 +70,9 @@ class Options:
                     this.configuration.{id} = (this.configuration.{id} === true) || (this.configuration.{id} === "true");
                 }}
                 '''
-            self.add_option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure)
+            self.add_option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure, hint)
         
-        def add_integer_option(self, id, name, defaultValue, minValue = None, maxValue = None):
+        def add_integer_option(self, id, name, hint, defaultValue, minValue = None, maxValue = None):
             minString = f'min="{minValue}"' if (minValue != None) else ""
             maxString = f'max="{maxValue}"' if (maxValue != None) else ""
             inputHtml = f'<input type="number" id="{id}" {minString} {maxString} />'
@@ -86,7 +87,7 @@ class Options:
                     this.configuration.{id} = Number(this.configuration.{id});
                 }}
                 '''
-            self.add_option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure)
+            self.add_option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure, hint)
         
         def get_html(self):
             html = ""
@@ -227,13 +228,13 @@ def get_options():
     options = Options()
     
     capture = options.add_category("Capture")
-    capture.add_string_option("captureFilename", "Filename", "capture.wgpur")
-    capture.add_integer_option("captureMaxFrames", "Max frames", 0, 0, None)
+    capture.add_string_option("captureFilename", "Filename", "What to name the capture file.", "capture.wgpur")
+    capture.add_integer_option("captureMaxFrames", "Max frames", "Automatically end the capture after n frames. 0 for no limit (capture has to be ended manually).", 0, 0, None)
     
     adapter = options.add_category("Adapter")
-    adapter.add_bool_option("adapterDefaultLimits", "Force default limits", False)
+    adapter.add_bool_option("adapterDefaultLimits", "Force default limits", "Pretend the adapter only supports the default limits. Useful for testing and making captures more portable.", False)
     
     externalTextures = options.add_category("External textures")
-    externalTextures.add_integer_option("externalTextureScale", "Scale (%)", 100, 1, 100)
+    externalTextures.add_integer_option("externalTextureScale", "Scale (%)", "Downscale external textures to reduce capture file size.", 100, 1, 100)
     
     return options
