@@ -29,12 +29,10 @@ Device::Device(Adapter& adapter) {
         WGPUFeatureName_Float32Filterable,
         WGPUFeatureName_Float32Blendable,
         WGPUFeatureName_ClipDistances,
-#if WEBGPU_BACKEND_DAWN
         WGPUFeatureName_Subgroups,
         WGPUFeatureName_TextureFormatsTier1,
         WGPUFeatureName_TextureFormatsTier2,
         WGPUFeatureName_PrimitiveIndex,
-#endif
     };
     for (WGPUFeatureName feature : desiredFeatures) {
         if (wgpuAdapterHasFeature(adapter.GetAdapter(), feature)) {

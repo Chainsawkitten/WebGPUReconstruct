@@ -13,12 +13,6 @@ The following optional WebGPU features are not supported:
 
 During capture, `GPUAdapter` will behave as if these features are not supported, even if the device supports them.
 
-The following optional WebGPU features are not supported during WGPU playback:
-- `primitive-index`
-- `subgroups`
-- `texture-formats-tier1`
-- `texture-formats-tier2`
-
 The following properties are not supported:
 - `GPUShaderModuleDescriptor.compilationHints`
 

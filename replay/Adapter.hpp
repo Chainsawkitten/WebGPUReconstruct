@@ -14,20 +14,16 @@ class Adapter {
     WGPUAdapter GetAdapter();
     WGPUSurface GetSurface();
 
-#if WEBGPU_BACKEND_DAWN
     uint32_t GetSubgroupMinSize() const;
     uint32_t GetSubgroupMaxSize() const;
-#endif
 
   private:
     WGPUInstance instance;
     WGPUSurface surface;
     WGPUAdapter adapter;
 
-#if WEBGPU_BACKEND_DAWN
     uint32_t subgroupMinSize;
     uint32_t subgroupMaxSize;
-#endif
 
     void InitializeBackend();
     void CreateInstance();

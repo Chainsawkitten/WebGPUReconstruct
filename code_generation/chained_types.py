@@ -61,14 +61,7 @@ __WebGPUReconstruct_file.writeUint64($name);
 $name->maxDrawCount = reader.ReadUint64();
 """)
 
-GPUExternalTextureBindingLayout = ChainedType("ExternalTextureBindingLayout", """
-""",
-"""
-#if WEBGPU_BACKEND_WGPU
-ErrorOutput("External texture in bind group layout not supported in wgpu backend.\\n");
-#endif
-"""
-)
+GPUExternalTextureBindingLayout = ChainedType("ExternalTextureBindingLayout", "", "")
 
 GPUTextureBindingViewDimension = ChainedType("TextureBindingViewDimensionDescriptor", GPUTextureViewDimension.save("$name"),
 """
