@@ -63,12 +63,4 @@ $name->maxDrawCount = reader.ReadUint64();
 
 GPUExternalTextureBindingLayout = ChainedType("ExternalTextureBindingLayout", "", "")
 
-GPUTextureBindingViewDimension = ChainedType("TextureBindingViewDimensionDescriptor", GPUTextureViewDimension.save("$name"),
-"""
-#if WEBGPU_BACKEND_WGPU
-ErrorOutput("GPUTextureDescriptor.textureBindingViewDimension not supported in wgpu backend.\\n");
-#else
-""" + GPUTextureViewDimension.load("$name->textureBindingViewDimension") + """
-#endif
-"""
-)
+GPUTextureBindingViewDimension = ChainedType("TextureBindingViewDimension", GPUTextureViewDimension.save("$name"), GPUTextureViewDimension.load("$name->textureBindingViewDimension"))
