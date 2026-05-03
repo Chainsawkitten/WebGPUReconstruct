@@ -421,7 +421,7 @@ function __WebGPUReconstruct_GPUAdapter_requestDevice(originalMethod, descriptor
         
         if (descriptor.requiredFeatures != undefined) {
             for (const feature of descriptor.requiredFeatures) {
-                if (__WebGPUReconstruct_supportedFeatures.has(String(feature))) {
+                if (__WebGPUReconstruct_supportedFeatures.has(String(feature)) && !__webGPUReconstruct.configuration.adapterFeatureBlocklist.has(String(feature))) {
                     overrideDescriptor.requiredFeatures.push(feature);
                 } else {
                     console.error("Unsupported feature: " + feature);
@@ -502,7 +502,7 @@ function __WebGPUReconstruct_GPU_requestAdapter(originalMethod, options) {
         return originalMethod.call(this, options).then((adapter) => {
             let features = new Set();
             for (const value of adapter.features) {
-                if (__WebGPUReconstruct_supportedFeatures.has(value)) {
+                if (__WebGPUReconstruct_supportedFeatures.has(value) && !__webGPUReconstruct.configuration.adapterFeatureBlocklist.has(value)) {
                     features.add(value);
                 }
             }

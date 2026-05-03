@@ -56,6 +56,20 @@ class Options:
                 '''
             self.add_option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure, hint)
         
+        def add_string_array_option(self, id, name, hint, defaultValue):
+            inputHtml = f'<textarea id="{id}" rows="5"></textarea>'
+            storageSet = f'{id}: {id}'
+            storageGet = f'{id}: "{defaultValue}"'
+            elementSet = f'document.getElementById(\'{id}\').value = items.{id};'
+            elementGet = f'const {id} = document.getElementById(\'{id}\').value;'
+            configure = f'''
+                if (this.configuration.{id} === undefined) {{
+                    this.configuration.{id} = "{defaultValue}";
+                }}
+                this.configuration.{id} = new Set(this.configuration.{id}.split(","));
+                '''
+            self.add_option(id, name, inputHtml, storageSet, storageGet, elementSet, elementGet, configure, hint)
+        
         def add_bool_option(self, id, name, hint, defaultValue):
             defaultString = "true" if defaultValue else "false"
             inputHtml = f'<input type="checkbox" id="{id}" value="true" />'
@@ -255,6 +269,7 @@ def get_options():
     
     adapter = options.add_category("Adapter")
     adapter.add_bool_option("adapterDefaultLimits", "Force default limits", "Pretend the adapter only supports the default limits. Useful for testing and making captures more portable.", False)
+    adapter.add_string_array_option("adapterFeatureBlocklist", "Feature blocklist", "Comma-separated list of features to pretend the adapter doesn't support. Useful for testing and making captures more portable.", "")
     
     externalTextures = options.add_category("External textures")
     externalTextures.add_integer_option("externalTextureScale", "Scale (%)", "Downscale external textures to reduce capture file size.", 100, 1, 100)
