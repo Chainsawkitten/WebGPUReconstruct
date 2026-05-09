@@ -237,6 +237,7 @@ add_simple_command(GPUComputePassEncoder, "pushDebugGroup", "wgpuComputePassEnco
 add_simple_command(GPUComputePassEncoder, "popDebugGroup", "wgpuComputePassEncoderPopDebugGroup", undefined, [])
 add_simple_command(GPUComputePassEncoder, "insertDebugMarker", "wgpuComputePassEncoderInsertDebugMarker", undefined, [String])
 add_set_bind_group_command(GPUComputePassEncoder, "wgpuComputePassEncoderSetBindGroup")
+add_unsupported_command(GPUComputePassEncoder, "setImmediates", 4)
 
 add_simple_command(GPURenderPassEncoder, "setViewport", "wgpuRenderPassEncoderSetViewport", undefined, [Float32, Float32, Float32, Float32, Float32, Float32])
 add_simple_command(GPURenderPassEncoder, "setScissorRect", "wgpuRenderPassEncoderSetScissorRect", undefined, [Uint32, Uint32, Uint32, Uint32])
@@ -257,6 +258,7 @@ add_simple_command(GPURenderPassEncoder, "draw", "wgpuRenderPassEncoderDraw", un
 add_simple_command(GPURenderPassEncoder, "drawIndexed", "wgpuRenderPassEncoderDrawIndexed", undefined, [Uint32, Optional(Uint32, 1), Uint32, Int32, Uint32])
 add_simple_command(GPURenderPassEncoder, "drawIndirect", "wgpuRenderPassEncoderDrawIndirect", undefined, [GPUBuffer, Uint64])
 add_simple_command(GPURenderPassEncoder, "drawIndexedIndirect", "wgpuRenderPassEncoderDrawIndexedIndirect", undefined, [GPUBuffer, Uint64])
+add_unsupported_command(GPURenderPassEncoder, "setImmediates", 4)
 
 add_simple_command(GPURenderBundleEncoder, "finish", "wgpuRenderBundleEncoderFinish", GPURenderBundle, [GPURenderBundleDescriptor])
 add_simple_command(GPURenderBundleEncoder, "pushDebugGroup", "wgpuRenderBundleEncoderPushDebugGroup", undefined, [String])
@@ -270,6 +272,7 @@ add_simple_command(GPURenderBundleEncoder, "draw", "wgpuRenderBundleEncoderDraw"
 add_simple_command(GPURenderBundleEncoder, "drawIndexed", "wgpuRenderBundleEncoderDrawIndexed", undefined, [Uint32, Optional(Uint32, 1), Uint32, Int32, Uint32])
 add_simple_command(GPURenderBundleEncoder, "drawIndirect", "wgpuRenderBundleEncoderDrawIndirect", undefined, [GPUBuffer, Uint64])
 add_simple_command(GPURenderBundleEncoder, "drawIndexedIndirect", "wgpuRenderBundleEncoderDrawIndexedIndirect", undefined, [GPUBuffer, Uint64])
+add_unsupported_command(GPURenderBundleEncoder, "setImmediates", 4)
 
 add_destroy_command(GPUQuerySet)
 

@@ -15,8 +15,12 @@ During capture, `GPUAdapter` will behave as if these features are not supported,
 
 The following properties are not supported:
 - `GPUShaderModuleDescriptor.compilationHints`
+- `GPUPipelineLayoutDescriptor.immediateSize`
 
 These properties will be treated as if they were set to `undefined`. Setting an unsupported property will give you a warning during capture (but not during replay).
+
+The following methods are not supported:
+- `GPUBindingCommandsMixin.setImmediates()`
 
 ## Labels
 WebGPUReconstruct records the `label` supplied with the `GPUObjectDescriptorBase` when creating an object. However, it will ignore any changes to a `GPUObject`'s `label` after creation.
