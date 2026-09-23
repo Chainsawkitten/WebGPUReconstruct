@@ -20,10 +20,11 @@ class Capture {
         FRAME_START,
         FRAME_END,
         COMMAND,
-        END_OF_CAPTURE
+        END_OF_CAPTURE,
+        FAILURE
     };
     
-    Capture(std::string_view filename, Adapter& adapter, Device& device, SwapChain& swapChain, bool offscreen);
+    Capture(std::string_view filename, Adapter& adapter, Device& device, SwapChain& swapChain, bool offscreen, bool verifyReadbacks);
     ~Capture();
 
     bool IsValid() const;
@@ -50,6 +51,7 @@ class Capture {
     Device& device;
     SwapChain& swapChain;
     bool offscreen;
+    bool verifyReadbacks;
 
     Uint8Reader reader;
     

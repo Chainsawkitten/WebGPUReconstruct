@@ -24,6 +24,7 @@ class TestApp {
     Device device;
     SwapChain swapChain;
     bool offscreen = false;
+    bool verifyReadbacks = false;
     std::string statsFile;
 
     TestApp(const TestApp&) = delete;

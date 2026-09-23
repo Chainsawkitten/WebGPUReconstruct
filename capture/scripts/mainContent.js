@@ -622,13 +622,21 @@ function __WebGPUReconstruct_getExternalTextureBlitSampler(device) {
 
 function __WebGPUReconstruct_GPUBuffer_unmap(originalMethod) {
     __WebGPUReconstruct_DebugOutput("unmap");
+    let captureContents = true;
+    
     if (this.__readOnly) {
         __WebGPUReconstruct_file.writeUint32(4);
         __WebGPUReconstruct_file.writeUint32(this.__id);
+        captureContents = __webGPUReconstruct.configuration.bufferCaptureReadbackData;
+        if (!captureContents) {
+            __WebGPUReconstruct_file.writeUint64(0);
+        }
     } else {
         __WebGPUReconstruct_file.writeUint32(3);
         __WebGPUReconstruct_file.writeUint32(this.__id);
-        
+    }
+    
+    if (captureContents) {
         // Capture buffer contents in all mapped ranges right before unmap().
         if (this.__mappedRanges == undefined) {
             this.__mappedRanges = [];

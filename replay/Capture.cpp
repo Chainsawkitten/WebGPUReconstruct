@@ -11,6 +11,7 @@
 #include <climits>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <thread>
 
@@ -30,8 +31,9 @@ $ENUM_CONVERSIONS
 // Generated functions to load WebGPU structs will be inserted here.
 $STRUCT_LOAD_FUNCTIONS
 
-Capture::Capture(string_view filename, Adapter& adapter, Device& device, SwapChain& swapChain, bool offscreen) : reader(filename), adapter(adapter), device(device), swapChain(swapChain) {
+Capture::Capture(string_view filename, Adapter& adapter, Device& device, SwapChain& swapChain, bool offscreen, bool verifyReadbacks) : reader(filename), adapter(adapter), device(device), swapChain(swapChain) {
     this->offscreen = offscreen;
+    this->verifyReadbacks = verifyReadbacks;
 
     const uint32_t version = reader.ReadUint32();
     if (version >= 5) {
@@ -299,6 +301,25 @@ Capture::Status Capture::RunNextCommand() {
         WGPUBuffer buffer = GetIdType(mapGPUBuffer, bufferID);
 
         WaitForBufferMapping(bufferID);
+        
+        const uint64_t ranges = reader.ReadUint64();
+        for (uint64_t range = 0; range < ranges; ++range) {
+            const uint64_t offset = reader.ReadUint64();
+            const uint64_t size = reader.ReadUint64();
+            
+            const uint8_t* bufferContents = reinterpret_cast<const uint8_t*>(wgpuBufferGetConstMappedRange(buffer, offset, size));
+            uint8_t* capturedContents = new uint8_t[size];
+            reader.ReadBuffer(capturedContents, size);
+            
+            // Verify buffer contents.
+            if (verifyReadbacks && memcmp(bufferContents, capturedContents, size) != 0) {
+                ErrorOutput("Readback mapped data did not match the capture.\n");
+                delete[] capturedContents;
+                return Status::FAILURE;
+            }
+            
+            delete[] capturedContents;
+        }
 
         wgpuBufferUnmap(buffer);
         break;

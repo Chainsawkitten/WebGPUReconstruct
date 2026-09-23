@@ -19,6 +19,7 @@ TestApp::TestApp(const Window& window, const Configuration& configuration) :
     device(adapter),
     swapChain(adapter, device, window, configuration.width, configuration.height, configuration.mailbox),
     offscreen(configuration.offscreen),
+    verifyReadbacks(configuration.verifyReadbacks),
     statsFile(configuration.statsFile)
 {
 
@@ -29,7 +30,7 @@ TestApp::~TestApp() {
 }
 
 void TestApp::RunCapture(string_view filename, std::function<bool(void)> frameCallback) {
-    Capture capture(filename, adapter, device, swapChain, offscreen);
+    Capture capture(filename, adapter, device, swapChain, offscreen, verifyReadbacks);
     if (!capture.IsValid()) {
         return;
     }
@@ -64,6 +65,10 @@ void TestApp::RunCapture(string_view filename, std::function<bool(void)> frameCa
                     emptyFrames++;
                 }
             }
+            break;
+        case Capture::Status::FAILURE:
+            finished = true;
+            prematureQuit = true;
             break;
         default:
             empty = false;

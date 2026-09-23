@@ -271,6 +271,9 @@ def get_options():
     adapter.add_bool_option("adapterDefaultLimits", "Force default limits", "Pretend the adapter only supports the default limits. Useful for testing and making captures more portable.", False)
     adapter.add_string_array_option("adapterFeatureBlocklist", "Feature blocklist", "Comma-separated list of features to pretend the adapter doesn't support. Useful for testing and making captures more portable.", "")
     
+    buffers = options.add_category("Buffers")
+    buffers.add_bool_option("bufferCaptureReadbackData", "Capture readback data", "Capture buffer contents on <code>mapAsync</code> calls which read back data. Only useful if you want to replay with <code>--verify-readbacks</code>.", False)
+    
     externalTextures = options.add_category("External textures")
     externalTextures.add_integer_option("externalTextureScale", "Scale (%)", "Downscale external textures to reduce capture file size.", 100, 1, 100)
     
