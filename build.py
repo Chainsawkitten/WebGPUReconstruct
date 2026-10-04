@@ -112,11 +112,18 @@ def build_replay(configuration):
     if configuration["android"]:
         build_replay_android(configuration)
 
+def build_tests(configuration):
+    print("Building tests")
+    
+    shutil.copytree("tests", "build/tests", dirs_exist_ok=True)
+    shutil.copyfile("build/capture/module/WebGPUReconstruct.js", "build/tests/WebGPUReconstruct.js")
+
 def build(configuration):
     start = default_timer()
     
     build_capture(configuration)
     build_replay(configuration)
+    build_tests(configuration)
     
     end = default_timer()
     print("Built WebGPUReconstruct in " + str(timedelta(seconds = end - start)))
