@@ -17,7 +17,7 @@ class TestApp {
     TestApp(const Window& window, const Configuration& configuration);
     ~TestApp();
 
-    void RunCapture(std::string_view filename, std::function<bool(void)> frameCallback);
+    bool RunCapture(std::string_view filename, std::function<bool(void)> frameCallback);
 
   private:
     Adapter adapter;

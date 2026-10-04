@@ -46,9 +46,10 @@ int main(int argc, char* argv[]) {
     }
 
     // Start replay.
+    bool success = true;
     {
         WebGPUNativeReplay::TestApp testApp(window, configuration);
-        testApp.RunCapture(configuration.filename, [&window]() {
+        success = testApp.RunCapture(configuration.filename, [&window]() {
             glfwPollEvents();
             return !glfwWindowShouldClose(window.window);
         });
@@ -57,5 +58,5 @@ int main(int argc, char* argv[]) {
     glfwDestroyWindow(window.window);
     glfwTerminate();
     
-    return 0;
+    return success ? 0 : 1;
 }

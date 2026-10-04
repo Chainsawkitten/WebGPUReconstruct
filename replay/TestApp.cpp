@@ -29,10 +29,10 @@ TestApp::~TestApp() {
 
 }
 
-void TestApp::RunCapture(string_view filename, std::function<bool(void)> frameCallback) {
+bool TestApp::RunCapture(string_view filename, std::function<bool(void)> frameCallback) {
     Capture capture(filename, adapter, device, swapChain, offscreen, verifyReadbacks);
     if (!capture.IsValid()) {
-        return;
+        return false;
     }
 
     const chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
@@ -76,51 +76,55 @@ void TestApp::RunCapture(string_view filename, std::function<bool(void)> frameCa
         }
     }
 
-    if (!prematureQuit) {
-        const chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
-        const chrono::system_clock::time_point endUnix = chrono::system_clock::now();
-
-        const chrono::duration<double> duration = chrono::duration_cast<chrono::duration<double>>(end - start);
-        const auto startUnixTimestamp = chrono::duration_cast<chrono::milliseconds>(startUnix.time_since_epoch());
-        const auto endUnixTimestamp = chrono::duration_cast<chrono::milliseconds>(endUnix.time_since_epoch());
-
-        stringstream stats;
-        stats << "Ran " << frameCount << " frames in " << duration.count() << " seconds (" << (static_cast<double>(frameCount) / duration.count()) << " FPS).\n";
-        if (emptyFrames > 0) {
-            stats << "Of which " << emptyFrames << " frames were empty (contained no commands).\n";
-        }
-        stats << setprecision(4) << fixed;
-        stats << "Start UNIX timestamp: " << startUnixTimestamp.count() / 1000.0 << "\n";
-        stats << "End UNIX timestamp: " << endUnixTimestamp.count() / 1000.0 << "\n";
-
-        stats << "Canvas: ";
-        Capture::CanvasSize canvasSize = capture.GetCanvasSize();
-        switch (canvasSize.state) {
-        case Capture::CanvasSize::State::NONE:
-            stats << "None";
-            break;
-        case Capture::CanvasSize::State::SINGLE:
-            stats << canvasSize.width << " x " << canvasSize.height;
-            break;
-        case Capture::CanvasSize::State::MULTIPLE:
-            stats << "Multiple sizes";
-            break;
-        }
-        stats << "\n";
-
-        stats << "Capture version " << capture.GetVersionMajor() << "." << capture.GetVersionMinor() << "\n";
-        stats << "Replayer version " << VERSION_MAJOR << "." << VERSION_MINOR << "\n";
-        stats << Configuration::GetImplementationVersion() << "\n";
-
-        Logging::Info(stats.str());
-
-        if (!statsFile.empty()) {
-            ofstream file;
-            file.open(statsFile);
-            file << stats.str();
-            file.close();
-        }
+    if (prematureQuit) {
+        return false;
     }
+
+    const chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
+    const chrono::system_clock::time_point endUnix = chrono::system_clock::now();
+
+    const chrono::duration<double> duration = chrono::duration_cast<chrono::duration<double>>(end - start);
+    const auto startUnixTimestamp = chrono::duration_cast<chrono::milliseconds>(startUnix.time_since_epoch());
+    const auto endUnixTimestamp = chrono::duration_cast<chrono::milliseconds>(endUnix.time_since_epoch());
+
+    stringstream stats;
+    stats << "Ran " << frameCount << " frames in " << duration.count() << " seconds (" << (static_cast<double>(frameCount) / duration.count()) << " FPS).\n";
+    if (emptyFrames > 0) {
+        stats << "Of which " << emptyFrames << " frames were empty (contained no commands).\n";
+    }
+    stats << setprecision(4) << fixed;
+    stats << "Start UNIX timestamp: " << startUnixTimestamp.count() / 1000.0 << "\n";
+    stats << "End UNIX timestamp: " << endUnixTimestamp.count() / 1000.0 << "\n";
+
+    stats << "Canvas: ";
+    Capture::CanvasSize canvasSize = capture.GetCanvasSize();
+    switch (canvasSize.state) {
+    case Capture::CanvasSize::State::NONE:
+        stats << "None";
+        break;
+    case Capture::CanvasSize::State::SINGLE:
+        stats << canvasSize.width << " x " << canvasSize.height;
+        break;
+    case Capture::CanvasSize::State::MULTIPLE:
+        stats << "Multiple sizes";
+        break;
+    }
+    stats << "\n";
+
+    stats << "Capture version " << capture.GetVersionMajor() << "." << capture.GetVersionMinor() << "\n";
+    stats << "Replayer version " << VERSION_MAJOR << "." << VERSION_MINOR << "\n";
+    stats << Configuration::GetImplementationVersion() << "\n";
+
+    Logging::Info(stats.str());
+
+    if (!statsFile.empty()) {
+        ofstream file;
+        file.open(statsFile);
+        file << stats.str();
+        file.close();
+    }
+
+    return true;
 }
 
 }
