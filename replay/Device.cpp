@@ -103,6 +103,14 @@ Device::Device(Adapter& adapter) {
 
     // Get queue.
     queue = wgpuDeviceGetQueue(device);
+
+#if WEBGPU_BACKEND_DAWN
+    WGPULoggingCallbackInfo loggingCallback = {};
+    loggingCallback.callback = [](WGPULoggingType type, WGPUStringView message, void* userdata1, void* userdata2) {
+        Logging::Info(std::to_string(type) + ": " + std::string(std::string_view(message.data, message.length)));
+    };
+    wgpuDeviceSetLoggingCallback(device, loggingCallback);
+#endif
 }
 
 Device::~Device() {
