@@ -13,10 +13,12 @@ class Device {
 
     WGPUDevice GetDevice();
     WGPUQueue GetQueue();
+    bool HasError() const;
 
   private:
     WGPUDevice device;
     WGPUQueue queue;
+    bool error = false;
 
     Device() = delete;
     Device(const Device&) = delete;

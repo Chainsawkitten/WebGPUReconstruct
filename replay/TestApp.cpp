@@ -124,7 +124,7 @@ bool TestApp::RunCapture(string_view filename, std::function<bool(void)> frameCa
         file.close();
     }
 
-    return true;
+    return !device.HasError();
 }
 
 }
