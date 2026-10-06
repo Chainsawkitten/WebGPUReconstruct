@@ -7,16 +7,19 @@ To contribute, fork the repository on GitHub and open a pull request with your s
 Large language models or generative AI must not be used when contributing to this project.
 
 ## Tests
-WebGPUReconstructs includes a test suite. To run it:
+WebGPUReconstruct uses [Selenium](https://www.selenium.dev) to automate tests. To install it, run:
+
+```
+pip install -U selenium
+```
+
+Then, to run the test suite:
 
 1. [Build WebGPUReconstruct with both wgpu and Dawn backends.](BUILDING.md)
-1. Host the test web page by running `python -m http.server` in `build/tests`.
-
-Then to run a test:
-1. Navigate to `localhost:8000?test=<TEST NAME>` in your web browser. Make sure the WebGPUReconstruct extension is disabled before doing so, as the tests use the module version of WebGPUReconstruct, which could interfere with the extension.
-1. Check the browser's debug console for any error messages.
-1. Run the resulting capture file through the native replayer with `--verify-readbacks`.
-1. Ensure the replay finished without any errors.
+1. In `build/tests`, run
+```
+python ./run_tests.py --dawn-replayer <PATH_TO_DAWN_REPLAYER> --wgpu-replayer <PATH_TO_WGPU_REPLAYER>
+```
 
 ## Versioning
 Whenever the capture file format is modified in any way, increment `fileVersion` in `code_generation\code_generation.py`.

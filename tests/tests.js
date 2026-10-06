@@ -13,7 +13,7 @@ class Tests {
 
         WebGPUReconstruct.finish();
 
-        console.log(test + " finished.");
+        document.getElementById("result").style.display = "inline";
     }
 
     async createDevice(features) {
