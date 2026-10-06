@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser(description = "WebGPUReconstruct unit tests.")
 parser.add_argument("--dawn-replayer", help = "Path to the Dawn replayer to use when replaying test captures.")
 parser.add_argument("--wgpu-replayer", help = "Path to the wgpu replayer to use when replaying test captures.")
 parser.add_argument("--port", default = "8000", help = "Port to host test web page on. Default: 8000.")
+parser.add_argument("--test", help = "Run only one specific test.")
 args=parser.parse_args()
 
 # Request handler that doesn't print every request.
@@ -35,7 +36,7 @@ class Tests:
         while not self.done:
             self.server.handle_request()
     
-    def run_all_tests(self):
+    def setup(self):
         print("Running WebGPUReconstruct unit tests")
         
         # Run web server
@@ -47,6 +48,14 @@ class Tests:
         
         # Create captures folder.
         Path("captures").mkdir(parents=True, exist_ok=True)
+    
+    def teardown(self):
+        # Shut down web server
+        self.done = True
+        self.thread.join()
+    
+    def run_all_tests(self):
+        self.setup()
         
         # Run tests
         successes = 0
@@ -60,9 +69,7 @@ class Tests:
                 print("FAILED\n")
                 failures.append(test)
         
-        # Shut down web server
-        self.done = True
-        self.thread.join()
+        self.teardown()
         
         # Collect results
         print("===RESULTS===")
@@ -72,6 +79,17 @@ class Tests:
         if len(failures) > 0:
             print("Failing tests:")
             print(failures)
+    
+    def run_one_test(self, test):
+        self.setup()
+        
+        success = self.run_test(test)
+        if success:
+            print("SUCCESS\n")
+        else:
+            print("FAILED\n")
+        
+        self.teardown()
     
     def run_test(self, test):
         print(f"Running {test}")
@@ -139,4 +157,7 @@ tests.add("simpleClear")
 tests.add("drawTriangle")
 tests.add("characterEncoding")
 
-tests.run_all_tests()
+if args.test is None:
+    tests.run_all_tests()
+else:
+    tests.run_one_test(args.test)
