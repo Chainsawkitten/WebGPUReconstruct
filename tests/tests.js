@@ -68,6 +68,33 @@ class Tests {
         readbackBuffer.unmap();
     }
 
+    async verifyBuffer(buffer, reference) {
+        console.assert(buffer.size % 4 == 0);
+
+        const readbackBuffer = this.device.createBuffer({
+            size: buffer.size,
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
+        });
+
+        const commandEncoder = this.device.createCommandEncoder();
+        commandEncoder.copyBufferToBuffer(buffer, readbackBuffer);
+        this.device.queue.submit([commandEncoder.finish()]);
+
+        await readbackBuffer.mapAsync(GPUMapMode.READ);
+        const contents = readbackBuffer.getMappedRange();
+
+        const data = new Uint32Array(contents);
+        const referenceArray = new Uint32Array(reference);
+        for (let i = 0; i < data.length; i++) {
+            if (data[i] != referenceArray[i]) {
+                console.error(`Result buffer doesn't match reference. [${i}] = ${data[i]}. Expected ${referenceArray[i]}.`);
+                return;
+            }
+        }
+
+        readbackBuffer.unmap();
+    }
+
     // The simplest test. Clears a 1x1 render target with green.
     async simpleClear() {
         if (!await this.createDevice([])) {
@@ -211,7 +238,7 @@ fn main(
         passEncoder.end();
 
         this.device.queue.submit([commandEncoder.finish()]);
-        
+
         await this.verifyTexture(renderTarget, [
             [  0,   0, 255, 255], [  0,   0, 255, 255], [  0,   0, 255, 255], [  0,   0, 255, 255], [  0,   0, 255, 255],
             [255, 255,   0, 255], [  0,   0, 255, 255], [  0,   0, 255, 255], [  0,   0, 255, 255], [  0,   0, 255, 255],
@@ -220,7 +247,7 @@ fn main(
             [255, 255,   0, 255], [255, 255,   0, 255], [255, 255,   0, 255], [255, 255,   0, 255], [  0,   0, 255, 255]
         ]);
     }
-    
+
     // Create shader containing UTF-8 characters.
     async characterEncoding() {
         if (!await this.createDevice([])) {
@@ -241,6 +268,67 @@ fn main() {
                 })
             }
         });
+    }
+
+    // Writes a value to a storage buffer based on a pipeline overridable constant.
+    async pipelineOverridableConstant() {
+        if (!await this.createDevice([])) {
+            return;
+        }
+
+        const value = 23;
+        const multiplier = 2;
+
+        const pipeline = this.device.createComputePipeline({
+            layout: 'auto',
+            compute: {
+                module: this.device.createShaderModule({
+                    code:
+`@group(0) @binding(0) var<storage, read_write> data: array<u32>;
+
+@id(12) override value : u32 = 2;
+override multiplier : u32 = 1;
+
+@compute
+@workgroup_size(1)
+fn main() {
+    data[0] = value * multiplier;
+}
+`
+                }),
+                constants: {
+                    12: value,
+                    multiplier: multiplier
+                }
+            }
+        });
+
+        const buffer = this.device.createBuffer({
+            size: 4,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+        });
+
+        const bindGroup = this.device.createBindGroup({
+            layout: pipeline.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: buffer
+                }
+            ]
+        });
+
+        const commandEncoder = this.device.createCommandEncoder();
+        const passEncoder = commandEncoder.beginComputePass({});
+        passEncoder.setPipeline(pipeline);
+        passEncoder.setBindGroup(0, bindGroup);
+        passEncoder.dispatchWorkgroups(1, 1, 1);
+        passEncoder.end();
+        this.device.queue.submit([commandEncoder.finish()]);
+
+        await this.verifyBuffer(buffer, [
+            value * multiplier
+        ]);
     }
 }
 

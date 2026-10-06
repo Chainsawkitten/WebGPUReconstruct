@@ -156,6 +156,7 @@ tests = Tests(args)
 tests.add("simpleClear")
 tests.add("drawTriangle")
 tests.add("characterEncoding")
+tests.add("pipelineOverridableConstant")
 
 if args.test is None:
     tests.run_all_tests()
