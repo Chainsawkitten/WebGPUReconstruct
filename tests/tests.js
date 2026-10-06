@@ -220,6 +220,28 @@ fn main(
             [255, 255,   0, 255], [255, 255,   0, 255], [255, 255,   0, 255], [255, 255,   0, 255], [  0,   0, 255, 255]
         ]);
     }
+    
+    // Create shader containing UTF-8 characters.
+    async characterEncoding() {
+        if (!await this.createDevice([])) {
+            return;
+        }
+        
+        const pipeline = this.device.createComputePipeline({
+            layout: 'auto',
+            compute: {
+                module: this.device.createShaderModule({
+                    code:
+`@compute
+@workgroup_size(1)
+fn main() {
+    // Test comment containing UTF-8 characters: 😀😎😰
+}
+`
+                })
+            }
+        });
+    }
 }
 
 const tests = new Tests();

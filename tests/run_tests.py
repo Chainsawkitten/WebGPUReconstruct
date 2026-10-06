@@ -137,5 +137,6 @@ tests = Tests(args)
 # Test list
 tests.add("simpleClear")
 tests.add("drawTriangle")
+tests.add("characterEncoding")
 
 tests.run_all_tests()
