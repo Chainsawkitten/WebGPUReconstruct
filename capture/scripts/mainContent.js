@@ -381,7 +381,7 @@ function __WebGPUReconstruct_get_bytes_per_block(format) {
 }
 
 // Features supported by WebGPUReconstruct. We will pretend the adapter doesn't support any other features.
-// TODO: dual-source-blending, texture-component-swizzle, subgroup-size-control, texture-compression-unaligned
+// TODO: dual-source-blending, texture-component-swizzle, subgroup-size-control, texture-compression-unaligned, atomic-vec2u-min-max
 const __WebGPUReconstruct_supportedFeatures = new Set([
     "core-features-and-limits",
     "depth-clip-control",

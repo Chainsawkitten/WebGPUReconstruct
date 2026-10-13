@@ -12,6 +12,7 @@ The following optional WebGPU features are not supported:
 - `texture-component-swizzle`
 - `subgroup-size-control`
 - `texture-compression-unaligned`
+- `atomic-vec2u-min-max`
 
 During capture, `GPUAdapter` will behave as if these features are not supported, even if the device supports them.
 
