@@ -11,6 +11,7 @@ The following optional WebGPU features are not supported:
 - `dual-source-blending`
 - `texture-component-swizzle`
 - `subgroup-size-control`
+- `texture-compression-unaligned`
 
 During capture, `GPUAdapter` will behave as if these features are not supported, even if the device supports them.
 
