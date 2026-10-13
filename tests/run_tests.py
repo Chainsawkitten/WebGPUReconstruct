@@ -95,7 +95,8 @@ class Tests:
         print(f"Running {test}")
         
         # Delete any capture file from previous runs.
-        Path(f"captures/{test}.wgpur").unlink(missing_ok=True)
+        capture_path = Path(f"captures/{test}.wgpur")
+        capture_path.unlink(missing_ok=True)
         
         options = webdriver.ChromeOptions()
         options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
@@ -111,8 +112,6 @@ class Tests:
         
         logs = driver.get_log('browser')
         
-        driver.quit()
-        
         # Check the logs for any warnings or errors.
         errors = False
         for entry in logs:
@@ -121,7 +120,14 @@ class Tests:
                 errors = True
         
         if errors:
+            driver.quit()
             return False
+        
+        # Ensure "download" has finalized.
+        while not capture_path.exists():
+            pass
+        
+        driver.quit()
         
         # Run the replayer
         if not self.replay(test, "Dawn", self.dawn_replayer):
