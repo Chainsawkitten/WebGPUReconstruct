@@ -9,7 +9,11 @@ class Tests {
 
         this.canvas = document.querySelector('canvas');
         this.adapter = await navigator.gpu.requestAdapter();
-        await this[test]();
+        try {
+            await this[test]();
+        } catch (e) {
+            console.error(e.toString());
+        }
 
         WebGPUReconstruct.finish();
 
