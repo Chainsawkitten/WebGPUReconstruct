@@ -21,7 +21,13 @@ class Tests {
     }
 
     async createDevice(features) {
-        // TODO Check feature support before attempting to create the device.
+        // Check feature support before attempting to create the device.
+        for (let feature of features) {
+            if (!this.adapter.features.has(feature)) {
+                console.error(`Adapter does not support the required feature ${feature}.`);
+                return false;
+            }
+        }
 
         this.device = await this.adapter.requestDevice({ requiredFeatures : features });
         return true;
@@ -332,6 +338,106 @@ fn main() {
 
         await this.verifyBuffer(buffer, [
             value * multiplier
+        ]);
+    }
+
+    // Test that timestamp queries don't cause failures.
+    // We can't test the timestamp values as they are non-deterministic.
+    async timestampQueries() {
+        if (!await this.createDevice(['timestamp-query'])) {
+            return;
+        }
+
+        const querySet = this.device.createQuerySet({
+            type: "timestamp",
+            count: 4
+        });
+
+        // Timestamp queries in compute pass.
+        const computePipeline = this.device.createComputePipeline({
+            layout: 'auto',
+            compute: {
+                module: this.device.createShaderModule({
+                    code:
+`@group(0) @binding(0) var<storage, read_write> data: array<u32>;
+
+@compute
+@workgroup_size(1)
+fn main() {
+    data[0] = 54;
+}
+`
+                })
+            }
+        });
+
+        const buffer = this.device.createBuffer({
+            size: 4,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+        });
+
+        const resolveBuffer = this.device.createBuffer({
+            size: 4 * 8,
+            usage: GPUBufferUsage.QUERY_RESOLVE
+        });
+
+        const bindGroup = this.device.createBindGroup({
+            layout: computePipeline.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: buffer
+                }
+            ]
+        });
+
+        const commandEncoder = this.device.createCommandEncoder();
+        const computePassEncoder = commandEncoder.beginComputePass({
+            timestampWrites: {
+                querySet: querySet,
+                beginningOfPassWriteIndex: 0,
+                endOfPassWriteIndex: 1
+            }
+        });
+        computePassEncoder.setPipeline(computePipeline);
+        computePassEncoder.setBindGroup(0, bindGroup);
+        computePassEncoder.dispatchWorkgroups(1, 1, 1);
+        computePassEncoder.end();
+
+        // Timestamp queries in render pass.
+        const renderTarget = this.device.createTexture({
+            size: {
+                width: 1,
+                height: 1
+            },
+            format: 'rgba8unorm',
+            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
+        });
+
+        const renderPassEncoder = commandEncoder.beginRenderPass({
+            colorAttachments: [
+                {
+                    view: renderTarget.createView(),
+                    clearValue: [0, 1, 0, 1],
+                    loadOp: 'clear',
+                    storeOp: 'store',
+                }
+            ],
+            timestampWrites: {
+                querySet: querySet,
+                beginningOfPassWriteIndex: 2,
+                endOfPassWriteIndex: 3
+            }
+        });
+        renderPassEncoder.end();
+
+        commandEncoder.resolveQuerySet(querySet, 0, 4, resolveBuffer, 0);
+
+        this.device.queue.submit([commandEncoder.finish()]);
+
+        await this.verifyBuffer(buffer, [54]);
+        await this.verifyTexture(renderTarget, [
+            [0, 255, 0, 255]
         ]);
     }
 }

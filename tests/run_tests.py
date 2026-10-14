@@ -168,6 +168,7 @@ tests.add("simpleClear")
 tests.add("drawTriangle")
 tests.add("characterEncoding")
 tests.add("pipelineOverridableConstant")
+tests.add("timestampQueries")
 
 if args.test is None:
     tests.run_all_tests()
