@@ -108,7 +108,12 @@ class Tests:
         # Wait until test has finished.
         element = driver.find_element(By.ID, "result")
         wait = WebDriverWait(driver, timeout=20)
-        wait.until(lambda _ : element.is_displayed())
+        try:
+            wait.until(lambda _ : element.is_displayed())
+        except:
+            print("Test timed out")
+            driver.quit()
+            return False
         
         logs = driver.get_log('browser')
         
