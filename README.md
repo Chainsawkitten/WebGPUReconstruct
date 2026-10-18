@@ -4,7 +4,7 @@ A tool to record web WebGPU content and save it in a capture file. The capture f
 The goal is also to get consistent replays of web content which can be used to test changes to WebGPU implementations without having to build and run the full browser.
 
 ## Releases
-Binary releases are available for Windows, Linux and Android. Get them [here](https://github.com/Chainsawkitten/WebGPUReconstruct/releases).
+Binary releases are available for Windows, Mac, Linux and Android. Get them [here](https://github.com/Chainsawkitten/WebGPUReconstruct/releases).
 
 ## Building
 If you want to build yourself, instructions are available [here](docs/BUILDING.md).
