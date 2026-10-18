@@ -169,6 +169,7 @@ tests.add("drawTriangle")
 tests.add("characterEncoding")
 tests.add("pipelineOverridableConstant")
 tests.add("timestampQueries")
+tests.add("sequenceOrDictionary")
 
 if args.test is None:
     tests.run_all_tests()

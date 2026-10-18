@@ -440,6 +440,125 @@ fn main() {
             [0, 255, 0, 255]
         ]);
     }
+
+    // Test properties that can be either a sequence or a dictionary.
+    // These are: GPUColor, GPUExtent2D, GPUExtent3D, GPUOrigin2D and GPUOrigin3D
+    async sequenceOrDictionary() {
+        if (!await this.createDevice([])) {
+            return;
+        }
+
+        const runTest = async (clearColor, srcOrigin, dstOrigin, copySize, goldenImage) => {
+            const renderTarget = this.device.createTexture({
+                size: {
+                    width: 2,
+                    height: 2
+                },
+                format: 'rgba8unorm',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST
+            });
+
+            // Use a render pass to clear the render target with the given clear color.
+            const commandEncoder = this.device.createCommandEncoder();
+            const renderPassEncoder = commandEncoder.beginRenderPass({
+                colorAttachments: [
+                    {
+                        view: renderTarget.createView(),
+                        clearValue: clearColor,
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    }
+                ]
+            });
+            renderPassEncoder.end();
+            this.device.queue.submit([commandEncoder.finish()]);
+
+            // Copy the specified part of the external image to the render target.
+            const response = await fetch('externalImage.png');
+            const imageBitmap = await createImageBitmap(await response.blob());
+            this.device.queue.copyExternalImageToTexture({
+                source: imageBitmap,
+                origin: srcOrigin
+            }, {
+                texture: renderTarget,
+                origin: dstOrigin
+            }, copySize);
+
+            await this.verifyTexture(renderTarget, goldenImage);
+        };
+
+        // Default values.
+        await runTest(undefined, undefined, undefined, { width: 1 }, [
+            [255, 255, 255, 255], [  0,   0,   0,   0],
+            [  0,   0,   0,   0], [  0,   0,   0,   0]
+        ]);
+
+        // Dictionary with as many default values as possible.
+        await runTest({ r: 1.0, g: 0.0, b: 1.0, a: 0}, {}, {}, { width: 1 }, [
+            [255, 255, 255, 255], [255,   0, 255,   0],
+            [255,   0, 255,   0], [255,   0, 255,   0]
+        ]);
+
+        // Fully specified dictionary.
+        await runTest({ r: 1.0, g: 0.0, b: 1.0, a: 0}, { x: 1, y: 0 }, { x: 1, y: 0, z: 0 }, { width: 1, height: 2, depthOrArrayLayers: 1 }, [
+            [255,   0, 255,   0], [255,   0,   0, 255],
+            [255,   0, 255,   0], [  0, 255, 255, 255]
+        ]);
+
+        // Array with as many default values as possible.
+        await runTest([1.0, 0.0, 1.0, 0.0], [], [], [1], [
+            [255, 255, 255, 255], [255,   0, 255,   0],
+            [255,   0, 255,   0], [255,   0, 255,   0]
+        ]);
+
+        // Fully specified array.
+        await runTest([1.0, 0.0, 1.0, 0.0], [1, 0], [1, 0, 0], [1, 2, 1], [
+            [255,   0, 255,   0], [255,   0,   0, 255],
+            [255,   0, 255,   0], [  0, 255, 255, 255]
+        ]);
+
+        // Typed arrays with default values.
+        await runTest(new Float32Array([1.0, 0.0, 1.0, 0.0]), new Float64Array([]), new Uint32Array([]), new Int32Array([1]), [
+            [255, 255, 255, 255], [255,   0, 255,   0],
+            [255,   0, 255,   0], [255,   0, 255,   0]
+        ]);
+
+        // Fully specified typed arrays.
+        await runTest(new Float32Array([1.0, 0.0, 1.0, 0.0]), new Float64Array([1, 0]), new Uint32Array([1, 0, 0]), new Int32Array([1, 2, 1]), [
+            [255,   0, 255,   0], [255,   0,   0, 255],
+            [255,   0, 255,   0], [  0, 255, 255, 255]
+        ]);
+
+        // Fully specified Symbol.iterator
+        await runTest({
+            *[Symbol.iterator]() {
+                yield 1.0;
+                yield 0.0;
+                yield 1.0;
+                yield 0.0;
+            },
+        }, {
+            *[Symbol.iterator]() {
+                yield 1;
+                yield 0;
+            },
+        }, {
+            *[Symbol.iterator]() {
+                yield 1;
+                yield 0;
+                yield 0;
+            },
+        }, {
+            *[Symbol.iterator]() {
+                yield 1;
+                yield 2;
+                yield 1;
+            },
+        }, [
+            [255,   0, 255,   0], [255,   0,   0, 255],
+            [255,   0, 255,   0], [  0, 255, 255, 255]
+        ]);
+    }
 }
 
 const tests = new Tests();
