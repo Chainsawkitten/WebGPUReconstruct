@@ -451,7 +451,7 @@ GPUBindGroupLayoutDescriptor = StructType("GPUBindGroupLayoutDescriptor", [
 GPUPipelineLayoutDescriptor = StructType("GPUPipelineLayoutDescriptor", [
     [String, "label"],
     [SequenceType(GPUBindGroupLayout), "bindGroupLayout"],
-    [Unsupported, "immediateSize"]
+    [Uint32, "immediateSize", '0']
 ])
 
 GPUProgrammableStageDescriptor = SubStructType("GPUProgrammableStageDescriptor", [

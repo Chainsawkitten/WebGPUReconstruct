@@ -461,6 +461,7 @@ function __WebGPUReconstruct_getDefaultLimits(compatibility) {
         maxTextureArrayLayers: 256,
         maxBindGroups: 4,
         maxBindGroupsPlusVertexBuffers: 24,
+        maxImmediateSize: 64,
         maxBindingsPerBindGroup: 1000,
         maxDynamicUniformBuffersPerPipelineLayout: 8,
         maxDynamicStorageBuffersPerPipelineLayout: 4,

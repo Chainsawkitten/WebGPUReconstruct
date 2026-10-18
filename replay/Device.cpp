@@ -33,6 +33,9 @@ Device::Device(Adapter& adapter) {
         WGPUFeatureName_TextureFormatsTier1,
         WGPUFeatureName_TextureFormatsTier2,
         WGPUFeatureName_PrimitiveIndex,
+#if WEBGPU_BACKEND_WGPU
+        static_cast<WGPUFeatureName>(WGPUNativeFeature_Immediates),
+#endif
     };
     for (WGPUFeatureName feature : desiredFeatures) {
         if (wgpuAdapterHasFeature(adapter.GetAdapter(), feature)) {

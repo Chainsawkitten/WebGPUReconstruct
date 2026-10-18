@@ -22,6 +22,14 @@ class QuietHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def log_request(self, code='-', size='-'):
         pass
 
+EXPECTED_FAILURE_DAWN = 1
+EXPECTED_FAILURE_WGPU = 2
+
+class Test:
+    def __init__(self, name, flags = 0):
+        self.name = name
+        self.flags = flags
+
 class Tests:
     def __init__(self, args):
         self.tests = []
@@ -29,8 +37,8 @@ class Tests:
         self.dawn_replayer = args.dawn_replayer
         self.wgpu_replayer = args.wgpu_replayer
     
-    def add(self, name):
-        self.tests.append(name)
+    def add(self, name, flags = 0):
+        self.tests.append(Test(name, flags))
     
     def run_server(self):
         while not self.done:
@@ -67,7 +75,7 @@ class Tests:
                 print("SUCCESS\n")
             else:
                 print("FAILED\n")
-                failures.append(test)
+                failures.append(test.name)
         
         self.teardown()
         
@@ -80,22 +88,30 @@ class Tests:
             print("Failing tests:")
             print(failures)
     
-    def run_one_test(self, test):
+    def run_one_test(self, test_name):
         self.setup()
         
-        success = self.run_test(test)
-        if success:
-            print("SUCCESS\n")
-        else:
-            print("FAILED\n")
+        found = False
+        for test in self.tests:
+            if test.name == test_name:
+                success = self.run_test(test)
+                found = True
+                
+                if success:
+                    print("SUCCESS\n")
+                else:
+                    print("FAILED\n")
+        
+        if not found:
+            print(f"Could not find test {test_name}")
         
         self.teardown()
     
     def run_test(self, test):
-        print(f"Running {test}")
+        print(f"Running {test.name}")
         
         # Delete any capture file from previous runs.
-        capture_path = Path(f"captures/{test}.wgpur")
+        capture_path = Path(f"captures/{test.name}.wgpur")
         capture_path.unlink(missing_ok=True)
         
         options = webdriver.ChromeOptions()
@@ -103,7 +119,7 @@ class Tests:
         options.add_experimental_option("prefs", {"download.default_directory": str(Path("captures").absolute())});
         
         driver = webdriver.Chrome(options = options)
-        driver.get(f"http://localhost:{self.port}/tests.html?test={test}")
+        driver.get(f"http://localhost:{self.port}/tests.html?test={test.name}")
         
         # Wait until test has finished.
         element = driver.find_element(By.ID, "result")
@@ -135,16 +151,22 @@ class Tests:
         driver.quit()
         
         # Run the replayer
-        if not self.replay(test, "Dawn", self.dawn_replayer):
-            errors = True
+        if test.flags & EXPECTED_FAILURE_DAWN:
+            print("Expected failure, skipping Dawn replay")
+        else:
+            if not self.replay(test, "Dawn", self.dawn_replayer):
+                errors = True
         
-        if not self.replay(test, "wgpu", self.wgpu_replayer):
-            errors = True
+        if test.flags & EXPECTED_FAILURE_WGPU:
+            print("Expected failure, skipping wgpu replay")
+        else:
+            if not self.replay(test, "wgpu", self.wgpu_replayer):
+                errors = True
         
         return not errors
     
     def replay(self, test, replayer_name, replayer_path):
-        result = subprocess.run([replayer_path, str(Path(f"captures/{test}.wgpur")), '--verify-readbacks', '--offscreen'], shell = False, capture_output=True)
+        result = subprocess.run([replayer_path, str(Path(f"captures/{test.name}.wgpur")), '--verify-readbacks', '--offscreen'], shell = False, capture_output=True)
         if result.returncode != 0:
             print(f"{replayer_name} replay failed")
             print(result.stderr.decode())
@@ -170,6 +192,8 @@ tests.add("characterEncoding")
 tests.add("pipelineOverridableConstant")
 tests.add("timestampQueries")
 tests.add("sequenceOrDictionary")
+tests.add("immediatesCompute", EXPECTED_FAILURE_WGPU) # Creating pipeline with immediates and automatic pipeline layout fails.
+tests.add("immediatesGraphics", EXPECTED_FAILURE_WGPU) # Creating pipeline with immediates and automatic pipeline layout fails.
 
 if args.test is None:
     tests.run_all_tests()

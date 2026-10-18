@@ -67,6 +67,10 @@ class Tests {
                 for (let component = 0; component < 4; component++) {
                     const value = data[y * bytesPerRow + x * 4 + component];
                     const reference = goldenImage[y * texture.width + x][component];
+                    if (reference == null) {
+                        console.error(`Missing reference value at x: ${x}, y: ${y}`);
+                        return;
+                    }
                     if (Math.abs(value - reference) > threshold) {
                         console.error(`Result image doesn't match reference. x: ${x}, y: ${y}, component ${component} was ${value}. Expected ${reference}.`);
                         return;
@@ -558,6 +562,276 @@ fn main() {
             [255,   0, 255,   0], [255,   0,   0, 255],
             [255,   0, 255,   0], [  0, 255, 255, 255]
         ]);
+    }
+
+    // Test using immediates in compute pass encoder.
+    async immediatesCompute() {
+        if (!await this.createDevice([])) {
+            return;
+        }
+
+        const runTest = async (rangeOffset, data, dataOffset, dataSize, referenceValue) => {
+            const runInternal = async(autoLayout, rangeOffset, data, dataOffset, dataSize, referenceValue) => {
+                const bindGroupLayout = this.device.createBindGroupLayout({
+                    entries: [
+                        {
+                            binding: 0,
+                            visibility: GPUShaderStage.COMPUTE,
+                            buffer: {
+                                type: "storage"
+                            }
+                        }
+                    ]
+                });
+
+                const pipelineLayout = autoLayout ? undefined : this.device.createPipelineLayout({
+                    bindGroupLayouts: [bindGroupLayout],
+                    immediateSize: 16
+                });
+
+                const computePipeline = this.device.createComputePipeline({
+                    layout: autoLayout ? 'auto' : pipelineLayout,
+                    compute: {
+                        module: this.device.createShaderModule({
+                            code:
+`@group(0) @binding(0) var<storage, read_write> data: array<u32>;
+
+struct Immediates {
+    value0: u32,
+    value1: u32,
+    value2: u32,
+    value3: u32
+};
+
+var<immediate> immediates : Immediates;
+
+@compute
+@workgroup_size(1)
+fn main() {
+    data[0] = immediates.value2;
+}
+`
+                        })
+                    }
+                });
+
+                const buffer = this.device.createBuffer({
+                    size: 4,
+                    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+                });
+
+                const bindGroup = this.device.createBindGroup({
+                    layout: computePipeline.getBindGroupLayout(0),
+                    entries: [
+                        {
+                            binding: 0,
+                            resource: buffer
+                        }
+                    ]
+                });
+
+                const commandEncoder = this.device.createCommandEncoder();
+                const passEncoder = commandEncoder.beginComputePass({});
+                passEncoder.setPipeline(computePipeline);
+                passEncoder.setBindGroup(0, bindGroup);
+                passEncoder.setImmediates(0, new Uint32Array([0, 0, 0, 0]));
+                passEncoder.setImmediates(rangeOffset, data, dataOffset, dataSize);
+                passEncoder.dispatchWorkgroups(1, 1, 1);
+                passEncoder.end();
+                this.device.queue.submit([commandEncoder.finish()]);
+
+                await this.verifyBuffer(buffer, [
+                    referenceValue
+                ]);
+            };
+
+            // Auto layout, TypedArray.
+            await runInternal(true, rangeOffset, new Uint32Array(data), dataOffset, dataSize, referenceValue);
+
+            // Explicit layout, TypedArray.
+            await runInternal(false, rangeOffset, new Uint32Array(data), dataOffset, dataSize, referenceValue);
+
+            // Auto layout, ArrayBuffer.
+            const arrayBufferDataOffset = dataOffset === undefined ? undefined : dataOffset * 4;
+            const arrayBufferDataSize = dataSize === undefined ? undefined : dataSize * 4;
+            await runInternal(true, rangeOffset, new Uint32Array(data).buffer, arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+
+            // Explicit layout, ArrayBuffer.
+            await runInternal(false, rangeOffset, new Uint32Array(data).buffer, arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+
+            // Auto layout, DataView
+            await runInternal(true, rangeOffset, new DataView(new Uint32Array(data).buffer), arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+            
+            // Explicit layout, DataView.
+            await runInternal(false, rangeOffset, new DataView(new Uint32Array(data).buffer), arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+        };
+
+        // Write full immediate data with default offset and size.
+        await runTest(0, [0, 1, 54, 2], undefined, undefined, 54);
+
+        // Write only value 2.
+        await runTest(8, [54], undefined, undefined, 54);
+
+        // Ensure we don't write over value 2 when specifying size.
+        await runTest(4, [1, 2, 3, 4], undefined, 1, 0);
+
+        // Write only value 2, with offset.
+        await runTest(8, [1, 2, 3, 4, 54, 5, 6, 7], 4, 1, 54);
+    }
+
+    // Test using immediates in render pass encoder and render bundle encoder.
+    async immediatesGraphics() {
+        if (!await this.createDevice([])) {
+            return;
+        }
+        
+        const runTest = async (rangeOffset, data, dataOffset, dataSize, referenceValue) => {
+            const runInternal = async(autoLayout, useRenderBundle, rangeOffset, data, dataOffset, dataSize, referenceValue) => {
+                const pipelineLayout = autoLayout ? undefined : this.device.createPipelineLayout({
+                    bindGroupLayouts: [],
+                    immediateSize: 16
+                });
+
+                const pipeline = this.device.createRenderPipeline({
+                    layout: autoLayout ? 'auto' : pipelineLayout,
+                    vertex: {
+                        module: this.device.createShaderModule({
+                            code:
+`struct VSOut {
+  @builtin(position) pos : vec4f
+};
+
+@vertex
+fn main(
+    @builtin(vertex_index) VertexIndex : u32
+) -> VSOut {
+    var pos = array<vec2f, 3>(
+        vec2(-1.0, 3.0),
+        vec2(-1.0, -1.0),
+        vec2(3.0, -1.0)
+    );
+    
+    var out : VSOut;
+    out.pos = vec4f(pos[VertexIndex], 0.0, 1.0);
+    return out;
+}
+`
+                        })
+                    },
+                    fragment: {
+                        module: this.device.createShaderModule({
+                            code:
+`var<immediate> immediates : vec4f;
+
+@fragment
+fn main(
+
+) -> @location(0) vec4f {
+    var color : vec4f = immediates;
+    return color;
+}`
+                        }),
+                        targets: [
+                            {
+                                format: 'rgba8unorm'
+                            }
+                        ]
+                    }
+                });
+
+                const renderTarget = this.device.createTexture({
+                    size: {
+                        width: 1,
+                        height: 1
+                    },
+                    format: 'rgba8unorm',
+                    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
+                });
+
+                const commandEncoder = this.device.createCommandEncoder();
+
+                const passEncoder = commandEncoder.beginRenderPass({
+                    colorAttachments: [
+                        {
+                            view: renderTarget.createView(),
+                            clearValue: [0, 0, 0, 0],
+                            loadOp: 'clear',
+                            storeOp: 'store',
+                        }
+                    ]
+                });
+
+                if (useRenderBundle) {
+                    const bundleEncoder = this.device.createRenderBundleEncoder({
+                        colorFormats: ['rgba8unorm']
+                    });
+                    bundleEncoder.setPipeline(pipeline);
+                    bundleEncoder.setImmediates(0, new Float32Array([0.0, 0.0, 0.0, 0.0]));
+                    bundleEncoder.setImmediates(rangeOffset, data, dataOffset, dataSize);
+                    bundleEncoder.draw(3);
+
+                    passEncoder.executeBundles([bundleEncoder.finish()]);
+                } else {
+                    passEncoder.setPipeline(pipeline);
+                    passEncoder.setImmediates(0, new Float32Array([0.0, 0.0, 0.0, 0.0]));
+                    passEncoder.setImmediates(rangeOffset, data, dataOffset, dataSize);
+                    passEncoder.draw(3);
+                }
+                passEncoder.end();
+
+                this.device.queue.submit([commandEncoder.finish()]);
+
+                await this.verifyTexture(renderTarget, [referenceValue]);
+            };
+
+            const arrayBufferDataOffset = dataOffset === undefined ? undefined : dataOffset * 4;
+            const arrayBufferDataSize = dataSize === undefined ? undefined : dataSize * 4;
+
+            // Auto layout, render pass encoder, TypedArray.
+            await runInternal(true, false, rangeOffset, new Float32Array(data), dataOffset, dataSize, referenceValue);
+
+            // Explicit layout, render pass encoder, TypedArray.
+            await runInternal(false, false, rangeOffset, new Float32Array(data), dataOffset, dataSize, referenceValue);
+
+            // Auto layout, render bundle encoder, TypedArray.
+            await runInternal(true, true, rangeOffset, new Float32Array(data), dataOffset, dataSize, referenceValue);
+
+            // Explicit layout, render bundle encoder, TypedArray.
+            await runInternal(false, true, rangeOffset, new Float32Array(data), dataOffset, dataSize, referenceValue);
+
+            // Auto layout, render pass encoder, ArrayBuffer.
+            await runInternal(true, false, rangeOffset, new Float32Array(data).buffer, arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+
+            // Explicit layout, render pass encoder, ArrayBuffer.
+            await runInternal(false, false, rangeOffset, new Float32Array(data).buffer, arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+
+            // Auto layout, render bundle encoder, ArrayBuffer.
+            await runInternal(true, true, rangeOffset, new Float32Array(data).buffer, arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+
+            // Explicit layout, render bundle encoder, ArrayBuffer.
+            await runInternal(false, true, rangeOffset, new Float32Array(data).buffer, arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+            
+            // Auto layout, render pass encoder, DataView.
+            await runInternal(true, false, rangeOffset, new DataView(new Float32Array(data).buffer), arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+
+            // Explicit layout, render pass encoder, DataView.
+            await runInternal(false, false, rangeOffset, new DataView(new Float32Array(data).buffer), arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+
+            // Auto layout, render bundle encoder, DataView.
+            await runInternal(true, true, rangeOffset, new DataView(new Float32Array(data).buffer), arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+
+            // Explicit layout, render bundle encoder, DataView.
+            await runInternal(false, true, rangeOffset, new DataView(new Float32Array(data).buffer), arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+        };
+
+        // Write full immediate data with default offset and size.
+        await runTest(0, [1.0, 1.0, 0.0, 1.0], undefined, undefined, [255, 255, 0, 255]);
+
+        // Partial write.
+        await runTest(4, [1.0, 1.0, 1.0], undefined, 2, [0, 255, 255, 0]);
+
+        // Partial write with offset.
+        await runTest(4, [0.3, 0.4, 0.5, 1.0, 1.0, 1.0], 3, 2, [0, 255, 255, 0]);
     }
 }
 
