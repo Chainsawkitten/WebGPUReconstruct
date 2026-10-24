@@ -194,6 +194,7 @@ tests.add("timestampQueries")
 tests.add("sequenceOrDictionary")
 tests.add("immediatesCompute", EXPECTED_FAILURE_WGPU) # Creating pipeline with immediates and automatic pipeline layout fails.
 tests.add("immediatesGraphics", EXPECTED_FAILURE_WGPU) # Creating pipeline with immediates and automatic pipeline layout fails.
+tests.add("writeBuffer")
 
 if args.test is None:
     tests.run_all_tests()

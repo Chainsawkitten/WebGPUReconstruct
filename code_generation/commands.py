@@ -450,7 +450,12 @@ if (dataOffset == undefined) {
     dataOffset = 0;
 }
 let dataUint8;
-if (ArrayBuffer.isView(data)) {
+if (data instanceof DataView) {
+    if (size == undefined) {
+        size = data.byteLength - dataOffset;
+    }
+    dataUint8 = (new Uint8Array(data.buffer)).subarray(data.byteOffset, data.byteOffset + data.byteLength);
+} else if (ArrayBuffer.isView(data)) {
     dataOffset *= data.BYTES_PER_ELEMENT;
     if (size == undefined) {
         size = data.byteLength - dataOffset;

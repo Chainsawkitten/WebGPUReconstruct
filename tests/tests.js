@@ -833,6 +833,47 @@ fn main(
         // Partial write with offset.
         await runTest(4, [0.3, 0.4, 0.5, 1.0, 1.0, 1.0], 3, 2, [0, 255, 255, 0]);
     }
+
+    // Test GPUQueue.writeBuffer with different data sources, offsets and sizes.
+    async writeBuffer() {
+        if (!await this.createDevice([])) {
+            return;
+        }
+
+        const runTest = async (bufferOffset, data, dataOffset, dataSize, referenceValue) => {
+            const runInternal = async(bufferOffset, data, dataOffset, dataSize, referenceValue) => {
+                const buffer = this.device.createBuffer({
+                    size: 16,
+                    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
+                });
+
+                this.device.queue.writeBuffer(buffer, bufferOffset, data, dataOffset, dataSize);
+
+                await this.verifyBuffer(buffer, referenceValue);
+            };
+
+            const arrayBufferDataOffset = dataOffset === undefined ? undefined : dataOffset * 4;
+            const arrayBufferDataSize = dataSize === undefined ? undefined : dataSize * 4;
+
+            // TypedArray
+            await runInternal(bufferOffset, new Uint32Array(data), dataOffset, dataSize, referenceValue);
+
+            // ArrayBuffer
+            await runInternal(bufferOffset, new Uint32Array(data).buffer, arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+
+            // DataView
+            await runInternal(bufferOffset, new DataView(new Uint32Array(data).buffer), arrayBufferDataOffset, arrayBufferDataSize, referenceValue);
+        };
+
+        // Full write with default offset and size.
+        await runTest(0, [1, 2, 3, 4], undefined, undefined, [1, 2, 3, 4]);
+
+        // Partial write.
+        await runTest(4, [1, 2, 3], undefined, 2, [0, 1, 2, 0]);
+        
+        // Partial write with offset.
+        await runTest(4, [1, 2, 3, 4, 5, 6], 3, undefined, [0, 4, 5, 6]);
+    }
 }
 
 const tests = new Tests();
