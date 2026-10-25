@@ -78,7 +78,7 @@ class Tests {
                 }
             }
         }
-        
+
         readbackBuffer.unmap();
     }
 
@@ -870,9 +870,99 @@ fn main(
 
         // Partial write.
         await runTest(4, [1, 2, 3], undefined, 2, [0, 1, 2, 0]);
-        
+
         // Partial write with offset.
         await runTest(4, [1, 2, 3, 4, 5, 6], 3, undefined, [0, 4, 5, 6]);
+    }
+
+    // Create pipeline with/without unclippedDepth and ensure primitive is/isn't culled.
+    async depthClipControl() {
+        if (!await this.createDevice(['depth-clip-control'])) {
+            return;
+        }
+
+        const runTest = async (unclippedDepth, referenceValue) => {
+            const pipeline = this.device.createRenderPipeline({
+                layout: 'auto',
+                vertex: {
+                    module: this.device.createShaderModule({
+                        code:
+`struct VSOut {
+  @builtin(position) pos : vec4f
+};
+
+@vertex
+fn main(
+    @builtin(vertex_index) VertexIndex : u32
+) -> VSOut {
+    var pos = array<vec2f, 3>(
+        vec2(-1.0, 3.0),
+        vec2(-1.0, -1.0),
+        vec2(3.0, -1.0)
+    );
+    
+    var out : VSOut;
+    out.pos = vec4f(pos[VertexIndex], 20.0, 1.0);
+    return out;
+}
+`
+                    })
+                },
+                fragment: {
+                    module: this.device.createShaderModule({
+                        code:
+`@fragment
+fn main(
+
+) -> @location(0) vec4f {
+    return vec4f(0.0, 1.0, 0.0, 1.0);
+}`
+                    }),
+                    targets: [
+                        {
+                            format: 'rgba8unorm'
+                        }
+                    ]
+                },
+                primitive: {
+                    unclippedDepth: unclippedDepth
+                }
+            });
+
+            const renderTarget = this.device.createTexture({
+                size: {
+                    width: 1,
+                    height: 1
+                },
+                format: 'rgba8unorm',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
+            });
+
+            const commandEncoder = this.device.createCommandEncoder();
+
+            const passEncoder = commandEncoder.beginRenderPass({
+                colorAttachments: [
+                    {
+                        view: renderTarget.createView(),
+                        clearValue: [1, 0, 0, 0],
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    }
+                ]
+            });
+
+            passEncoder.setPipeline(pipeline);
+            passEncoder.draw(3);
+
+            passEncoder.end();
+
+            this.device.queue.submit([commandEncoder.finish()]);
+
+            await this.verifyTexture(renderTarget, [referenceValue]);
+        };
+
+        await runTest(false, [255, 0, 0, 0]);
+        await runTest(true, [0, 255, 0, 255]);
     }
 }
 
