@@ -197,6 +197,7 @@ tests.add("immediatesGraphics", EXPECTED_FAILURE_WGPU) # Creating pipeline with 
 tests.add("writeBuffer")
 tests.add("depthClipControl")
 tests.add("textureComponentSwizzle", EXPECTED_FAILURE_WGPU) # wgpu-native hasn't implemented texture-component-swizzle.
+tests.add("dualSourceBlending")
 
 if args.test is None:
     tests.run_all_tests()

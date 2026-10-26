@@ -199,12 +199,11 @@ GPUBlendFactor = EnumType("GPUBlendFactor", [
     ["one-minus-dst-alpha", "WGPUBlendFactor_OneMinusDstAlpha"],
     ["src-alpha-saturated", "WGPUBlendFactor_SrcAlphaSaturated"],
     ["constant", "WGPUBlendFactor_Constant"],
-    ["one-minus-constant", "WGPUBlendFactor_OneMinusConstant"]
-    # TODO Dual-source blending extension.
-    #["src1", ],
-    #["one-minus-src1", ],
-    #["src1-alpha", ],
-    #["one-minus-src1-alpha", ]
+    ["one-minus-constant", "WGPUBlendFactor_OneMinusConstant"],
+    ["src1", "WGPUBlendFactor_Src1"],
+    ["one-minus-src1", "WGPUBlendFactor_OneMinusSrc1"],
+    ["src1-alpha", "WGPUBlendFactor_Src1Alpha"],
+    ["one-minus-src1-alpha", "WGPUBlendFactor_OneMinusSrc1Alpha"]
 ])
 
 GPUVertexStepMode = EnumType("GPUVertexStepMode", [

@@ -8,7 +8,6 @@ Since workers run in a separate context, WebGPUReconstruct is not able to captur
 
 ## Unsupported features
 The following optional WebGPU features are not supported:
-- `dual-source-blending`
 - `subgroup-size-control`
 - `texture-compression-unaligned`
 - `atomic-vec2u-min-max`

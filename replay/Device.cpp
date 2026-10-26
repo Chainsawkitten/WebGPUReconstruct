@@ -29,6 +29,7 @@ Device::Device(Adapter& adapter) {
         WGPUFeatureName_Float32Filterable,
         WGPUFeatureName_Float32Blendable,
         WGPUFeatureName_ClipDistances,
+        WGPUFeatureName_DualSourceBlending,
         WGPUFeatureName_Subgroups,
         WGPUFeatureName_TextureFormatsTier1,
         WGPUFeatureName_TextureFormatsTier2,

@@ -1092,6 +1092,117 @@ fn main(
         // Fixed values.
         await runTest("0011", [0, 0, 255, 255]);
     }
+
+    // Blending with dual-source-blending factors.
+    async dualSourceBlending() {
+        if (!await this.createDevice(['dual-source-blending'])) {
+            return;
+        }
+
+        const runTest = async (colorFactor, alphaFactor, referenceValue) => {
+            const pipeline = this.device.createRenderPipeline({
+                layout: 'auto',
+                vertex: {
+                    module: this.device.createShaderModule({
+                        code:
+`struct VSOut {
+  @builtin(position) pos : vec4f
+};
+
+@vertex
+fn main(
+    @builtin(vertex_index) VertexIndex : u32
+) -> VSOut {
+    var pos = array<vec2f, 3>(
+        vec2(-1.0, 3.0),
+        vec2(-1.0, -1.0),
+        vec2(3.0, -1.0)
+    );
+    
+    var out : VSOut;
+    out.pos = vec4f(pos[VertexIndex], 0.0, 1.0);
+    return out;
+}
+`
+                    })
+                },
+                fragment: {
+                    module: this.device.createShaderModule({
+                        code:
+`enable dual_source_blending;
+
+struct FSOut {
+    @location(0) @blend_src(0) color0 : vec4f,
+    @location(0) @blend_src(1) color1 : vec4f
+};
+
+@fragment
+fn main(
+
+) -> FSOut {
+    var out : FSOut;
+    out.color0 = vec4f(1.0, 1.0, 1.0, 1.0);
+    out.color1 = vec4f(0, 0.25, 0.5, 0.75);
+    return out;
+}`
+                    }),
+                    targets: [
+                        {
+                            format: 'rgba8unorm',
+                            blend: {
+                                color: {
+                                    srcFactor: colorFactor,
+                                    dstFactor: "zero"
+                                },
+                                alpha: {
+                                    srcFactor: alphaFactor,
+                                    dstFactor: "zero"
+                                }
+                            }
+                        }
+                    ]
+                }
+            });
+
+            const renderTarget = this.device.createTexture({
+                size: {
+                    width: 1,
+                    height: 1
+                },
+                format: 'rgba8unorm',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
+            });
+
+            const commandEncoder = this.device.createCommandEncoder();
+
+            const passEncoder = commandEncoder.beginRenderPass({
+                colorAttachments: [
+                    {
+                        view: renderTarget.createView(),
+                        clearValue: [0, 0, 0, 0],
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    }
+                ]
+            });
+
+            passEncoder.setPipeline(pipeline);
+            passEncoder.draw(3);
+
+            passEncoder.end();
+
+            this.device.queue.submit([commandEncoder.finish()]);
+
+            await this.verifyTexture(renderTarget, [referenceValue]);
+        };
+
+        // Default blend factors.
+        await runTest("one", "one", [255, 255, 255, 255]);
+
+        // dual-source-blending factors
+        await runTest("src1", "one-minus-src1", [0, 64, 128, 64]);
+        await runTest("src1-alpha", "one-minus-src1-alpha", [191, 191, 191, 64]);
+    }
 }
 
 const tests = new Tests();
