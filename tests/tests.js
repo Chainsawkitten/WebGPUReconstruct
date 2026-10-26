@@ -964,6 +964,134 @@ fn main(
         await runTest(false, [255, 0, 0, 0]);
         await runTest(true, [0, 255, 0, 255]);
     }
+
+    // Draw full screen triangle sampling a texture with different swizzles.
+    async textureComponentSwizzle() {
+        if (!await this.createDevice(['texture-component-swizzle'])) {
+            return;
+        }
+
+        const runTest = async (swizzle, referenceValue) => {
+            const pipeline = this.device.createRenderPipeline({
+                layout: 'auto',
+                vertex: {
+                    module: this.device.createShaderModule({
+                        code:
+`struct VSOut {
+  @builtin(position) pos : vec4f
+};
+
+@vertex
+fn main(
+    @builtin(vertex_index) VertexIndex : u32
+) -> VSOut {
+    var pos = array<vec2f, 3>(
+        vec2(-1.0, 3.0),
+        vec2(-1.0, -1.0),
+        vec2(3.0, -1.0)
+    );
+    
+    var out : VSOut;
+    out.pos = vec4f(pos[VertexIndex], 0.0, 1.0);
+    return out;
+}
+`
+                    })
+                },
+                fragment: {
+                    module: this.device.createShaderModule({
+                        code:
+`@group(0) @binding(0) var mySampler: sampler;
+@group(0) @binding(1) var myTexture: texture_2d<f32>;
+
+@fragment
+fn main(
+
+) -> @location(0) vec4f {
+    return textureSample(myTexture, mySampler, vec2f(0.5, 0.5));
+}`
+                    }),
+                    targets: [
+                        {
+                            format: 'rgba8unorm'
+                        }
+                    ]
+                }
+            });
+
+            const sampledTexture = this.device.createTexture({
+                size: {
+                    width: 1,
+                    height: 1
+                },
+                format: 'rgba8unorm',
+                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
+            });
+
+            this.device.queue.writeTexture({
+                texture: sampledTexture
+            }, new Uint8Array([25, 50, 75, 100]), {}, [1]);
+
+            const sampler = this.device.createSampler();
+
+            const renderTarget = this.device.createTexture({
+                size: {
+                    width: 1,
+                    height: 1
+                },
+                format: 'rgba8unorm',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
+            });
+
+            const bindGroup = this.device.createBindGroup({
+                layout: pipeline.getBindGroupLayout(0),
+                entries: [
+                    {
+                      binding: 0,
+                      resource: sampler,
+                    },
+                    {
+                      binding: 1,
+                      resource: sampledTexture.createView({
+                          swizzle: swizzle
+                      }),
+                    }
+                ]
+            });
+
+            const commandEncoder = this.device.createCommandEncoder();
+
+            const passEncoder = commandEncoder.beginRenderPass({
+                colorAttachments: [
+                    {
+                        view: renderTarget.createView(),
+                        clearValue: [0, 0, 0, 0],
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    }
+                ]
+            });
+
+            passEncoder.setPipeline(pipeline);
+            passEncoder.setBindGroup(0, bindGroup);
+            passEncoder.draw(3);
+
+            passEncoder.end();
+
+            this.device.queue.submit([commandEncoder.finish()]);
+
+            await this.verifyTexture(renderTarget, [referenceValue]);
+        };
+
+        // Default swizzle.
+        await runTest(undefined, [25, 50, 75, 100]);
+
+        // Swizzle components.
+        await runTest("gbrr", [50, 75, 25, 25]);
+
+        // Fixed values.
+        await runTest("0011", [0, 0, 255, 255]);
+    }
 }
 
 const tests = new Tests();

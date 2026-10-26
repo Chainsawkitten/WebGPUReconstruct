@@ -238,7 +238,8 @@ GPUTextureViewDescriptor = StructType("GPUTextureViewDescriptor", [
     [Uint32DefaultMax, "mipLevelCount"],
     [Uint32, "baseArrayLayer", '0'],
     [Uint32DefaultMax, "arrayLayerCount"],
-    [Uint32, "usage"]
+    [Uint32, "usage"],
+    [GPUTextureComponentSwizzle, "swizzle"]
 ])
 
 GPURenderPassColorAttachment = StructType("GPURenderPassColorAttachment", [

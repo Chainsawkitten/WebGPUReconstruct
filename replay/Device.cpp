@@ -33,6 +33,7 @@ Device::Device(Adapter& adapter) {
         WGPUFeatureName_TextureFormatsTier1,
         WGPUFeatureName_TextureFormatsTier2,
         WGPUFeatureName_PrimitiveIndex,
+        WGPUFeatureName_TextureComponentSwizzle,
 #if WEBGPU_BACKEND_WGPU
         static_cast<WGPUFeatureName>(WGPUNativeFeature_Immediates),
 #endif

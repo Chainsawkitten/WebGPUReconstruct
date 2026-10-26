@@ -354,3 +354,12 @@ GPUQueryType = EnumType("GPUQueryType", [
     ["occlusion", "WGPUQueryType_Occlusion"],
     ["timestamp", "WGPUQueryType_Timestamp"]
 ])
+
+GPUComponentSwizzle = EnumType("GPUComponentSwizzle", [
+    ["0", "WGPUComponentSwizzle_Zero"],
+    ["1", "WGPUComponentSwizzle_One"],
+    ["r", "WGPUComponentSwizzle_R"],
+    ["g", "WGPUComponentSwizzle_G"],
+    ["b", "WGPUComponentSwizzle_B"],
+    ["a", "WGPUComponentSwizzle_A"]
+])

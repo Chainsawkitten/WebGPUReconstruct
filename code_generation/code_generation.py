@@ -5,7 +5,7 @@ from pathlib import Path
 
 version = (2, 1)
 # Increment the file version whenever a change is introduced.
-fileVersion = 23
+fileVersion = 24
 
 versionString = str(version[0]) + "." + str(version[1])
 versionInt = version[0] * 10000 + version[1]

@@ -64,3 +64,14 @@ $name->maxDrawCount = reader.ReadUint64();
 GPUExternalTextureBindingLayout = ChainedType("ExternalTextureBindingLayout", "", "")
 
 GPUTextureBindingViewDimension = ChainedType("TextureBindingViewDimension", GPUTextureViewDimension.save("$name"), GPUTextureViewDimension.load("$name->textureBindingViewDimension"))
+
+GPUTextureComponentSwizzle = ChainedType("TextureComponentSwizzleDescriptor",
+    GPUComponentSwizzle.save("$name[0]") +
+    GPUComponentSwizzle.save("$name[1]") +
+    GPUComponentSwizzle.save("$name[2]") +
+    GPUComponentSwizzle.save("$name[3]"),
+    GPUComponentSwizzle.load("$name->swizzle.r") +
+    GPUComponentSwizzle.load("$name->swizzle.g") +
+    GPUComponentSwizzle.load("$name->swizzle.b") +
+    GPUComponentSwizzle.load("$name->swizzle.a")
+)
