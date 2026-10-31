@@ -1203,6 +1203,188 @@ fn main(
         await runTest("src1", "one-minus-src1", [0, 64, 128, 64]);
         await runTest("src1-alpha", "one-minus-src1-alpha", [191, 191, 191, 64]);
     }
+
+    // Draw a full screen triangle, with the color from a vertex buffer using different vertex formats.
+    async vertexFormats() {
+        if (!await this.createDevice([])) {
+            return;
+        }
+
+        const runTest = async (vertexFormat, shaderFormat, colorValue, referenceValue) => {
+            const colorSize = 4 * 4;
+            console.assert(colorValue.byteLength <= colorSize);
+            console.assert(colorValue.byteOffset == 0);
+
+            const pipeline = this.device.createRenderPipeline({
+                layout: 'auto',
+                vertex: {
+                    module: this.device.createShaderModule({
+                        code:
+`struct VSOut {
+    @builtin(position) pos : vec4f,
+    @location(0) color: vec4<f32>
+};
+
+@vertex
+fn main(
+    @location(0) position : vec2f,
+    @location(1) color : vec4<${shaderFormat}>
+) -> VSOut {
+    var out : VSOut;
+    out.pos = vec4f(position, 0.0, 1.0);
+    out.color = vec4<f32>(f32(color.x), f32(color.y), f32(color.z), f32(color.w));
+    return out;
+}
+`
+                    }),
+                    buffers: [
+                        {
+                            arrayStride: 2 * 4,
+                            stepMode: 'vertex',
+                            attributes: [
+                                {
+                                    // position
+                                    shaderLocation: 0,
+                                    offset: 0,
+                                    format: 'float32x2',
+                                }
+                            ],
+                        },
+                        {
+                            arrayStride: colorSize,
+                            stepMode: 'instance',
+                            attributes: [
+                                {
+                                    // color
+                                    shaderLocation: 1,
+                                    offset: 0,
+                                    format: vertexFormat,
+                                }
+                            ],
+                        }
+                    ],
+                },
+                fragment: {
+                    module: this.device.createShaderModule({
+                        code:
+`@fragment
+fn main(
+    @location(0) color: vec4f
+) -> @location(0) vec4f {
+    return color;
+}`
+                    }),
+                    targets: [
+                        {
+                            format: 'rgba8unorm'
+                        }
+                    ]
+                },
+                primitive: {
+                    topology: 'triangle-strip'
+                },
+            });
+
+            const vertexBuffer = this.device.createBuffer({
+                size: 2*4*3,
+                usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+            });
+            this.device.queue.writeBuffer(vertexBuffer, 0, new Float32Array([
+                -1.0, 3.0,
+                -1.0, -1.0,
+                3.0, -1.0
+            ]));
+
+            const colorBuffer = this.device.createBuffer({
+                size: colorSize,
+                usage: GPUBufferUsage.VERTEX,
+                mappedAtCreation: true
+            });
+            const colorBufferData = colorBuffer.getMappedRange();
+            const uint8ColorBufferData = new Uint8Array(colorBufferData);
+            uint8ColorBufferData.set(new Uint8Array(colorValue.buffer));
+            colorBuffer.unmap();
+
+            const renderTarget = this.device.createTexture({
+                size: {
+                    width: 1,
+                    height: 1
+                },
+                format: 'rgba8unorm',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
+            });
+
+            const commandEncoder = this.device.createCommandEncoder();
+
+            const passEncoder = commandEncoder.beginRenderPass({
+                colorAttachments: [
+                    {
+                        view: renderTarget.createView(),
+                        clearValue: [0, 0, 1, 1],
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    }
+                ]
+            });
+            passEncoder.setPipeline(pipeline);
+            passEncoder.setVertexBuffer(0, vertexBuffer);
+            passEncoder.setVertexBuffer(1, colorBuffer);
+            passEncoder.draw(3);
+            passEncoder.end();
+
+            this.device.queue.submit([commandEncoder.finish()]);
+
+            await this.verifyTexture(renderTarget, [referenceValue]);
+        };
+
+        const uint16Max = (1 << 16) - 1;
+        const int16Max = (1 << 15) - 1;
+        const uint10Max = (1 << 10) - 1;
+        const int10Max = (1 << 9) - 1;
+
+        await runTest('uint8', 'u32', new Uint8Array([1]), [255, 0, 0, 255]);
+        await runTest('uint8x2', 'u32', new Uint8Array([1, 1]), [255, 255, 0, 255]);
+        await runTest('uint8x4', 'u32', new Uint8Array([1, 1, 1, 1]), [255, 255, 255, 255]);
+        await runTest('sint8', 'i32', new Int8Array([1]), [255, 0, 0, 255]);
+        await runTest('sint8x2', 'i32', new Int8Array([1, 1]), [255, 255, 0, 255]);
+        await runTest('sint8x4', 'i32', new Int8Array([1, 1, 1, 1]), [255, 255, 255, 255]);
+        await runTest('unorm8', 'f32', new Uint8Array([255]), [255, 0, 0, 255]);
+        await runTest('unorm8x2', 'f32', new Uint8Array([255, 255]), [255, 255, 0, 255]);
+        await runTest('unorm8x4', 'f32', new Uint8Array([255, 255, 255, 255]), [255, 255, 255, 255]);
+        await runTest('snorm8', 'f32', new Uint8Array([127]), [255, 0, 0, 255]);
+        await runTest('snorm8x2', 'f32', new Uint8Array([127, 127]), [255, 255, 0, 255]);
+        await runTest('snorm8x4', 'f32', new Uint8Array([127, 127, 127, 127]), [255, 255, 255, 255]);
+        await runTest('uint16', 'u32', new Uint16Array([1]), [255, 0, 0, 255]);
+        await runTest('uint16x2', 'u32', new Uint16Array([1, 1]), [255, 255, 0, 255]);
+        await runTest('uint16x4', 'u32', new Uint16Array([1, 1, 1, 1]), [255, 255, 255, 255]);
+        await runTest('sint16', 'i32', new Int16Array([1]), [255, 0, 0, 255]);
+        await runTest('sint16x2', 'i32', new Int16Array([1, 1]), [255, 255, 0, 255]);
+        await runTest('sint16x4', 'i32', new Int16Array([1, 1, 1, 1]), [255, 255, 255, 255]);
+        await runTest('unorm16', 'f32', new Uint16Array([uint16Max]), [255, 0, 0, 255]);
+        await runTest('unorm16x2', 'f32', new Uint16Array([(uint16Max), uint16Max]), [255, 255, 0, 255]);
+        await runTest('unorm16x4', 'f32', new Uint16Array([(uint16Max), uint16Max, uint16Max, uint16Max]), [255, 255, 255, 255]);
+        await runTest('snorm16', 'f32', new Uint16Array([int16Max]), [255, 0, 0, 255]);
+        await runTest('snorm16x2', 'f32', new Uint16Array([(int16Max), int16Max]), [255, 255, 0, 255]);
+        await runTest('snorm16x4', 'f32', new Uint16Array([(int16Max), int16Max, int16Max, int16Max]), [255, 255, 255, 255]);
+        await runTest('float16', 'f32', new Float16Array([1.0]), [255, 0, 0, 255]);
+        await runTest('float16x2', 'f32', new Float16Array([1.0, 1.0]), [255, 255, 0, 255]);
+        await runTest('float16x4', 'f32', new Float16Array([1.0, 1.0, 1.0, 1.0]), [255, 255, 255, 255]);
+        await runTest('float32', 'f32', new Float32Array([1.0]), [255, 0, 0, 255]);
+        await runTest('float32x2', 'f32', new Float32Array([1.0, 1.0]), [255, 255, 0, 255]);
+        await runTest('float32x3', 'f32', new Float32Array([1.0, 1.0, 1.0]), [255, 255, 255, 255]);
+        await runTest('float32x4', 'f32', new Float32Array([1.0, 1.0, 1.0, 1.0]), [255, 255, 255, 255]);
+        await runTest('uint32', 'u32', new Uint32Array([1]), [255, 0, 0, 255]);
+        await runTest('uint32x2', 'u32', new Uint32Array([1, 1]), [255, 255, 0, 255]);
+        await runTest('uint32x3', 'u32', new Uint32Array([1, 1, 1]), [255, 255, 255, 255]);
+        await runTest('uint32x4', 'u32', new Uint32Array([1, 1, 1, 1]), [255, 255, 255, 255]);
+        await runTest('sint32', 'i32', new Int32Array([1]), [255, 0, 0, 255]);
+        await runTest('sint32x2', 'i32', new Int32Array([1, 1]), [255, 255, 0, 255]);
+        await runTest('sint32x3', 'i32', new Int32Array([1, 1, 1]), [255, 255, 255, 255]);
+        await runTest('sint32x4', 'i32', new Int32Array([1, 1, 1, 1]), [255, 255, 255, 255]);
+        await runTest('unorm10-10-10-2', 'f32', new Uint32Array([(uint10Max) | (uint10Max << 10) | (uint10Max << 20) | (3 << 30)]), [255, 255, 255, 255]);
+        await runTest('unorm8x4-bgra', 'f32', new Uint8Array([255, 128, 64, 0]), [64, 128, 255, 0]); // wgpu: invalid vertex format
+        await runTest('snorm10-10-10-2', 'f32', new Uint32Array([(int10Max) | (int10Max << 10) | (int10Max << 20) | (1 << 30)]), [255, 255, 255, 255]); // wgpu: invalid vertex format
+    }
 }
 
 const tests = new Tests();

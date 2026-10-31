@@ -253,6 +253,7 @@ GPUVertexFormat = EnumType("GPUVertexFormat", [
     ["sint32x4", "WGPUVertexFormat_Sint32x4"],
     ["unorm10-10-10-2", "WGPUVertexFormat_Unorm10_10_10_2"],
     ["unorm8x4-bgra", "WGPUVertexFormat_Unorm8x4BGRA"],
+    ["snorm10-10-10-2", "WGPUVertexFormat_Snorm10_10_10_2"],
 ])
 
 GPUPrimitiveTopology = EnumType("GPUPrimitiveTopology", [

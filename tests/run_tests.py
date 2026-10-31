@@ -48,7 +48,7 @@ class Tests:
         print("Running WebGPUReconstruct unit tests")
         
         # Run web server
-        self.server = socketserver.TCPServer(("", self.port), QuietHTTPRequestHandler)
+        self.server = socketserver.TCPServer(("localhost", self.port), QuietHTTPRequestHandler)
         self.server.timeout = 1
         self.thread = threading.Thread(target=self.run_server)
         self.done = False
@@ -61,6 +61,7 @@ class Tests:
         # Shut down web server
         self.done = True
         self.thread.join()
+        self.server.server_close()
     
     def run_all_tests(self):
         self.setup()
@@ -198,6 +199,7 @@ tests.add("writeBuffer")
 tests.add("depthClipControl")
 tests.add("textureComponentSwizzle", EXPECTED_FAILURE_WGPU) # wgpu-native hasn't implemented texture-component-swizzle.
 tests.add("dualSourceBlending")
+tests.add("vertexFormats", EXPECTED_FAILURE_WGPU) # wgpu-native hasn't implemented unorm8x4-bgra and snorm10-10-10-2.
 
 if args.test is None:
     tests.run_all_tests()
