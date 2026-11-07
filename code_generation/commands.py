@@ -111,7 +111,11 @@ __WebGPUReconstruct_DebugOutput("setBindGroup");
 __WebGPUReconstruct_file.writeUint32($COMMAND_ID);
 __WebGPUReconstruct_file.writeUint32(this.__id);
 __WebGPUReconstruct_file.writeUint32(index);
-__WebGPUReconstruct_file.writeUint32(bindGroup.__id);
+if (bindGroup == undefined) {
+    __WebGPUReconstruct_file.writeUint32(0);
+} else {
+    __WebGPUReconstruct_file.writeUint32(bindGroup.__id);
+}
 
 if (offsets0 == undefined) {
     offsets0 = [];

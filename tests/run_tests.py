@@ -200,6 +200,7 @@ tests.add("depthClipControl")
 tests.add("textureComponentSwizzle", EXPECTED_FAILURE_WGPU) # wgpu-native hasn't implemented texture-component-swizzle.
 tests.add("dualSourceBlending")
 tests.add("vertexFormats", EXPECTED_FAILURE_WGPU) # wgpu-native hasn't implemented unorm8x4-bgra and snorm10-10-10-2.
+tests.add("nullBindGroup")
 
 if args.test is None:
     tests.run_all_tests()

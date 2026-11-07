@@ -1385,6 +1385,60 @@ fn main(
         await runTest('unorm8x4-bgra', 'f32', new Uint8Array([255, 128, 64, 0]), [64, 128, 255, 0]); // wgpu: invalid vertex format
         await runTest('snorm10-10-10-2', 'f32', new Uint32Array([(int10Max) | (int10Max << 10) | (int10Max << 20) | (1 << 30)]), [255, 255, 255, 255]); // wgpu: invalid vertex format
     }
+
+    // Call setBindGroup with a bindGroup = null. Covers all overloads of setBindGroup.
+    async nullBindGroup() {
+        if (!await this.createDevice([])) {
+            return;
+        }
+
+        const computePipeline = this.device.createComputePipeline({
+            layout: 'auto',
+            compute: {
+                module: this.device.createShaderModule({
+                    code:
+`@group(0) @binding(0) var<storage, read_write> data: array<u32>;
+
+@compute
+@workgroup_size(1)
+fn main() {
+    data[0] = 34;
+}
+`
+                })
+            }
+        });
+
+        const buffer = this.device.createBuffer({
+            size: 4,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+        });
+
+        const bindGroup = this.device.createBindGroup({
+            layout: computePipeline.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: buffer
+                }
+            ]
+        });
+
+        const commandEncoder = this.device.createCommandEncoder();
+        const passEncoder = commandEncoder.beginComputePass({});
+        passEncoder.setPipeline(computePipeline);
+
+        passEncoder.setBindGroup(0, null);
+        passEncoder.setBindGroup(0, null, []);
+        passEncoder.setBindGroup(0, null, new Uint32Array([12, 14]), 0, 0);
+
+        passEncoder.setBindGroup(0, bindGroup);
+        passEncoder.dispatchWorkgroups(1, 1, 1);
+        passEncoder.end();
+        this.device.queue.submit([commandEncoder.finish()]);
+
+        await this.verifyBuffer(buffer, [34]);
+    }
 }
 
 const tests = new Tests();
